@@ -9,6 +9,13 @@ import org.junit.Test;
 
 import common.Logger;
 
+/*
+ * Test harness for OrderExecutor.
+ * 
+ * https://github.com/asim2025/etrading.git
+ * 
+ * @author asim2025
+ */
 public class OrderExecutorTest {
 	private Logger logger = Logger.getInstance(OrderExecutorTest.class);
 	private OrderExecutor executor;
@@ -17,6 +24,7 @@ public class OrderExecutorTest {
 	public void init() {
 		executor = new OrderExecutor();
 		logger.showReadableTime(true);
+		logger.setDebug(true);
 	}
 	
 	@Test
@@ -48,5 +56,4 @@ public class OrderExecutorTest {
 		}
 	}
 
-	
 }

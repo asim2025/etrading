@@ -4,13 +4,17 @@ import java.util.LinkedList;
 import java.util.List;
 
 /* 
- * limit stored in a binary tree data structure 
+ * limit object is a node in the binary tree.
+ * Each limit contains 1+ orders. Orders are placed in FIFO order.
+ *  
+ * https://github.com/asim2025/etrading.git
  * 
+ * @author asim2025
  */
 public class Limit {
 	private int limitPrice;
-	//private int size;
-	//private int totalVolume;
+	private int size;
+	private int totalVolume;
 	
 	private Limit left;
 	private Limit right;
@@ -22,6 +26,22 @@ public class Limit {
 		this.limitPrice = limitPrice;
 	}
 	
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public int getTotalVolume() {
+		return totalVolume;
+	}
+
+	public void setTotalVolume(int totalVolume) {
+		this.totalVolume = totalVolume;
+	}
+
 	public Limit getLeft() {
 		return left;
 	}

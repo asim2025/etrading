@@ -5,6 +5,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import common.Logger;
 
+/*
+ * Process and manage orders received from upstream.
+ * Maintain a ticker level limit order book.
+ * 
+ * https://github.com/asim2025/etrading.git
+ * 
+ * @author asim2025
+ */
 public class OrderExecutor {
 	private final static Logger logger = Logger.getInstance(OrderExecutor.class);
 	
@@ -18,8 +26,10 @@ public class OrderExecutor {
 	 * @return orderId
 	 */
 	public int addLimitOrder(String ticker, boolean buyOrSell, int shares, double limitPrice, long entryTime) {
-		logger.info("processLimitOrder: ticker:" + ticker + ",buyOrSell:" + buyOrSell + ",shares:" + shares +
+		if (logger.isDebug()) {
+			logger.debug("processLimitOrder: ticker:" + ticker + ",buyOrSell:" + buyOrSell + ",shares:" + shares +
 				",limitPrice:" + limitPrice + ",entryTime:" + entryTime);
+		}
 		
 
 		OrderBook book = getOrderBook(ticker, buyOrSell);

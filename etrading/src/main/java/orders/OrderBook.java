@@ -1,6 +1,12 @@
 package orders;
 
-
+/*
+ * OrderBook stores limits by price in a binary tree data structure.
+ * 
+ * https://github.com/asim2025/etrading.git
+ * 
+ * @author asim2025
+ */
 public class OrderBook {
 	private Limit root = null;
 

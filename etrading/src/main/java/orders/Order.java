@@ -1,5 +1,12 @@
 package orders;
 
+/*
+ * Basic order / trade object
+ * 
+ * https://github.com/asim2025/etrading.git
+ * 
+ * @author asim2025
+ */
 public class Order {
 	private int id;				// unique order id
 	private boolean buyOrSell;	// buy = true, sell = false
@@ -9,7 +16,7 @@ public class Order {
 	private long entryTime;		// order placement time
 	private long updateTime;	// last updated time
 
-	private static int GOID = 1;
+	private volatile static int GOID = 1;	// unique order id num - enhance for multiple jvms
 	
 	public Order(int id, boolean buyOrSell, int shares, int limitPrice, 
 			long entryTime) {

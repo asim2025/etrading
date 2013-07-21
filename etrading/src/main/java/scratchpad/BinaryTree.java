@@ -1,6 +1,11 @@
 package scratchpad;
 
-
+/*
+ * 
+ * https://github.com/asim2025/etrading.git
+ * 
+ * @author asim2025
+ */
 public class BinaryTree {
 	private TreeNode root = null;
 	
