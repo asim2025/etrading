@@ -85,26 +85,25 @@ public class OrderBook {
 	}
 	
 	
-	public boolean insert(int limitPrice) {
-		Limit node = new Limit(limitPrice, null, null);
+	public Limit insert(int limitPrice) {
+		Limit node = new Limit(limitPrice);
 		if (root == null) {
 			root = node;
-			return true;
+			return node;
 		}
 		
 		Limit runner = root;
 		while (true) {
 			if (runner.getLimitPrice() == limitPrice) {
-				return false; // dup limitPrice
+				return runner;
 			} else if (runner.getLimitPrice() > limitPrice) {
 				if (runner.getLeft() != null) runner = runner.getLeft();
-				else { runner.setLeft(node); break; }
+				else { runner.setLeft(node); return node; }
 			} else if (runner.getLimitPrice() < limitPrice) {
 				if (runner.getRight() != null) runner = runner.getRight();
-				else { runner.setRight(node); break; }
+				else { runner.setRight(node); return node; }
 			}
 		}
-		return true;
 	}
 	
 	public void printOrderBook() {

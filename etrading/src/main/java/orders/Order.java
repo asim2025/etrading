@@ -9,9 +9,11 @@ public class Order {
 	private long entryTime;		// order placement time
 	private long updateTime;	// last updated time
 
+	private static int GOID = 1;
+	
 	public Order(int id, boolean buyOrSell, int shares, int limitPrice, 
 			long entryTime) {
-		this.id= id;
+		this.id= (id == -1) ? GOID++ : id;
 		this.buyOrSell = buyOrSell;
 		this.shares = shares;
 		this.adjShares = shares;

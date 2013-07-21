@@ -15,13 +15,11 @@ public class Limit {
 	private Limit left;
 	private Limit right;
 	
-	//orders sorted by FIFO
+	//orders 
 	private List<Order> orders = new LinkedList<Order>();
 
-	public Limit(int limitPrice, Limit left, Limit right) {
+	public Limit(int limitPrice) {
 		this.limitPrice = limitPrice;
-		this.left = left;
-		this.right = right;
 	}
 	
 	public Limit getLeft() {
@@ -54,5 +52,11 @@ public class Limit {
 	
 	public void setOrder(Order o) {
 		orders.add(o);		
+	}
+	
+	public int addOrder(boolean buyOrSell, int shares, int limitPrice, long entryTime) {
+		Order o = new Order(-1, buyOrSell, shares, limitPrice, entryTime);
+		orders.add(o);
+		return o.getId();
 	}
 }
