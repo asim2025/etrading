@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import common.Logger;
 
+
 /*
  * Test harness for OrderExecutor.
  * 
@@ -43,8 +44,9 @@ public class OrderExecutorTest {
 	public void addMultipleLimitOrder() {
 		
 		Random random = new Random();
+		logger.setDebug(false);
 		
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 10000; i++) {
 			int orderId = executor.addLimitOrder(
 					"IBM", 
 					random.nextBoolean(), 
@@ -55,5 +57,6 @@ public class OrderExecutorTest {
 			assertTrue(orderId != -1);			
 		}
 	}
+
 
 }
