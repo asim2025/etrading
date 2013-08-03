@@ -1,4 +1,4 @@
-package scratchpad;
+package experimental;
 
 import static org.junit.Assert.*;
 
@@ -6,8 +6,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import scratchpad.BinaryTree;
-import scratchpad.TreeNode;
+import experimental.BinaryTree;
+import experimental.TreeNode;
+
 
 /*
  * https://github.com/asim2025/etrading.git
