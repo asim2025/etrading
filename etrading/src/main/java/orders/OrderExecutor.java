@@ -38,7 +38,9 @@ public class OrderExecutor {
 	 * Otherwise, queue up with other orders.
 	 * @return orderId
 	 */
-	public int addLimitOrder(String ticker, boolean buyOrSell, int shares, double limitPrice, long entryTime) throws InterruptedException {
+	public int addLimitOrder(String ticker, OrderSide side, int shares, double limitPrice, long entryTime) throws InterruptedException {
+		boolean buyOrSell = (side == OrderSide.BUY) ? true : false;
+		
 		if (logger.isDebug()) {
 			logger.debug("processLimitOrder: ticker:" + ticker + ",buyOrSell:" + buyOrSell + ",shares:" + shares +
 				",limitPrice:" + limitPrice + ",entryTime:" + entryTime);
@@ -55,6 +57,11 @@ public class OrderExecutor {
 		return order.getId();
 	}
 	
+	public void printOrderBook(String ticker, OrderSide side) {
+		boolean buyOrSell = (side == OrderSide.BUY) ? true : false;
+		OrderBook book = getOrderBook(ticker, buyOrSell);
+		book.printOrderBook();
+	}
 	
 	/*
 	 * Remove order from the queue, identified by the order id.

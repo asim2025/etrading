@@ -31,17 +31,36 @@ public class OrderExecutorTest {
 	@Test
 	public void addSingleLimitOrder() throws InterruptedException {
 		String ticker = "IBM";
-		boolean buyOrSell = true; //buy order
 		int shares = 100;
 		double limitPrice = 123.10;	
 		long entryTime = System.nanoTime();	
-		int orderId = executor.addLimitOrder(ticker, buyOrSell, shares, limitPrice, entryTime);
+		int orderId = executor.addLimitOrder(ticker, OrderSide.BUY, shares, limitPrice, entryTime);
 		logger.info("orderId:" + orderId);
 		assertTrue(orderId != -1);
 	}
 
 	
 	@Test
+	public void buildOrderBook() throws InterruptedException {
+		int orderId1 = executor.addLimitOrder("IBM", OrderSide.BUY, 300, 25, System.nanoTime());
+		logger.info("orderId:" + orderId1);
+		int orderId2 = executor.addLimitOrder("IBM", OrderSide.SELL, 400, 25.25, System.nanoTime());
+		logger.info("orderId:" + orderId2);
+		int orderId3 = executor.addLimitOrder("IBM", OrderSide.BUY, 200, 25, System.nanoTime());
+		logger.info("orderId:" + orderId3);
+		//int orderId4 = executor.addLimitOrder("IBM", false, 100, 25, System.nanoTime());
+		int orderId5 = executor.addLimitOrder("IBM", OrderSide.SELL, 200, 25.5, System.nanoTime());
+		logger.info("orderId:" + orderId5);
+		//int orderId6 = executor.addLimitOrder("IBM", true, 600, 25, System.nanoTime());
+		int orderId7 = executor.addLimitOrder("IBM", OrderSide.SELL, 400, 25, System.nanoTime());
+		logger.info("orderId:" + orderId7);
+		executor.printOrderBook("IBM", OrderSide.BUY);
+		executor.printOrderBook("IBM", OrderSide.SELL);
+	}
+	
+	
+
+	//@Test
 	public void addMultipleLimitOrder() throws InterruptedException {
 		
 		Random random = new Random();
@@ -50,7 +69,7 @@ public class OrderExecutorTest {
 		for (int i = 0; i < 10000; i++) {
 			int orderId = executor.addLimitOrder(
 					"IBM", 
-					random.nextBoolean(), 
+					(Boolean.TRUE == random.nextBoolean()) ? OrderSide.BUY : OrderSide.SELL, 
 					random.nextInt(500 - 10 + 1) + 10, // max=500, min=10
 					random.nextDouble() * 100, 
 					System.nanoTime());
