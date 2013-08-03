@@ -73,10 +73,4 @@ public class Limit {
 	public void setOrder(Order o) {
 		orders.add(o);		
 	}
-	
-	public int addOrder(boolean buyOrSell, int shares, int limitPrice, long entryTime) {
-		Order o = new Order(-1, buyOrSell, shares, limitPrice, entryTime);
-		orders.add(o);
-		return o.getId();
-	}
 }

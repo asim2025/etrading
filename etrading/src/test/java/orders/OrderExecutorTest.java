@@ -29,7 +29,7 @@ public class OrderExecutorTest {
 	}
 	
 	@Test
-	public void addSingleLimitOrder() {
+	public void addSingleLimitOrder() throws InterruptedException {
 		String ticker = "IBM";
 		boolean buyOrSell = true; //buy order
 		int shares = 100;
@@ -40,8 +40,9 @@ public class OrderExecutorTest {
 		assertTrue(orderId != -1);
 	}
 
+	
 	@Test
-	public void addMultipleLimitOrder() {
+	public void addMultipleLimitOrder() throws InterruptedException {
 		
 		Random random = new Random();
 		logger.setDebug(false);
@@ -57,6 +58,6 @@ public class OrderExecutorTest {
 			assertTrue(orderId != -1);			
 		}
 	}
-
+	
 
 }

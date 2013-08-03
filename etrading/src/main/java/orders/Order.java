@@ -8,6 +8,7 @@ package orders;
  * @author asim2025
  */
 public class Order {
+	private String ticker;		// ticker
 	private int id;				// unique order id
 	private boolean buyOrSell;	// buy = true, sell = false
 	private int shares;			// original shares on the order
@@ -18,9 +19,9 @@ public class Order {
 
 	private volatile static int GOID = 1;	// unique order id num - enhance for multiple jvms
 	
-	public Order(int id, boolean buyOrSell, int shares, int limitPrice, 
-			long entryTime) {
-		this.id= (id == -1) ? GOID++ : id;
+	public Order(String ticker, boolean buyOrSell, int shares, int limitPrice, long entryTime) {
+		this.id= GOID++;
+		this.ticker = ticker;
 		this.buyOrSell = buyOrSell;
 		this.shares = shares;
 		this.adjShares = shares;
@@ -37,7 +38,7 @@ public class Order {
 	public int getLimitPrice() { return limitPrice; }
 	public long getEntryTime() { return entryTime; }
 	public long getUpdateTime() { return updateTime; }
-	
+	public String getTicker() { return ticker; }
 
 	// the caller ensures that adjusted shares can't result in a negative number
 	public void adjustShares(int shares) {		
