@@ -73,4 +73,8 @@ public class Limit {
 	public void setOrder(Order o) {
 		orders.add(o);		
 	}
+	
+	public List<Order> getOrders() {
+		return orders;
+	}
 }

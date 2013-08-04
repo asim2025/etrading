@@ -118,7 +118,8 @@ public class OrderBook {
 	
 	private void printTree(Limit node) {
 		if (node == null) return;
-		System.out.println("\tnode:" + node + "\t{" + node.getLimitPrice() + "," + node.getLeft() + "," + node.getRight() + "}");
+		System.out.println("\tnode:" + node + "\t{" + node.getLimitPrice() + ",orders:" + node.getOrders() +
+				"," + node.getLeft() + "," + node.getRight() + "}");
 		printTree(node.getLeft());
 		printTree(node.getRight());
 	}

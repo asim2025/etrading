@@ -38,29 +38,36 @@ public class OrderExecutor {
 	 * Otherwise, queue up with other orders.
 	 * @return orderId
 	 */
-	public int addLimitOrder(String ticker, OrderSide side, int shares, double limitPrice, long entryTime) throws InterruptedException {
-		boolean buyOrSell = (side == OrderSide.BUY) ? true : false;
+	public int addOrder(String ticker, OrderType orderType, OrderSide orderSide, int shares, 
+			double limitPrice, long entryTime) throws InterruptedException {
+		
+		int side = getSide(orderSide);
+		int type = getOrderType(orderType);
 		
 		if (logger.isDebug()) {
-			logger.debug("processLimitOrder: ticker:" + ticker + ",buyOrSell:" + buyOrSell + ",shares:" + shares +
-				",limitPrice:" + limitPrice + ",entryTime:" + entryTime);
+			logger.debug("processLimitOrder: ticker:" + ticker + ",side:" + side + ",type:" + type +
+					",shares:" + shares + ",limitPrice:" + limitPrice + ",entryTime:" + entryTime);
 		}
 		
-		Order order = new Order(ticker, buyOrSell, shares, (int) limitPrice * 100, entryTime);
+		Order order = new Order(ticker, type, side, shares, (int) limitPrice * 100, entryTime);
 		logger.debug("orderId:" + order.getId());
 		
-		if (buyOrSell) {
-			buyQueue.put(order); 
-		} else {
-			sellQueue.put(order);
+		switch(side) {
+		case 1: buyQueue.put(order); break;
+		case 2: sellQueue.put(order); break;
 		}
+		
 		return order.getId();
 	}
 	
 	public void printOrderBook(String ticker, OrderSide side) {
-		boolean buyOrSell = (side == OrderSide.BUY) ? true : false;
-		OrderBook book = getOrderBook(ticker, buyOrSell);
-		book.printOrderBook();
+		OrderBook book = getOrderBook(ticker, getSide(side), false);
+		if (book == null) {
+			logger.error("book not found");
+		} else {
+			logger.info("order book:");
+			book.printOrderBook();
+		}
 	}
 	
 	/*
@@ -85,15 +92,35 @@ public class OrderExecutor {
 	//	return -1;
 	//}
 	
-	private OrderBook getOrderBook(String ticker, boolean buyOrSell) {
-		String key = ticker+buyOrSell;
+	private OrderBook getOrderBook(String ticker, int side, boolean createIt) {
+		String key = ticker+side;
 		OrderBook book = orderbooks.get(key);
-		if (book == null) {
+		if (createIt && book == null) {
 			book = new OrderBook();
 			orderbooks.put(key, book);
 			logger.info("created orderBook for key:" + key);
 		}
 		return book;
+	}
+	
+	private int getSide(OrderSide orderSide) {
+		int side = 0;
+		switch (orderSide) {
+		case BUY : side = 1; break;
+		case SELL : side = 2; break;
+		default: new RuntimeException("invalid side");
+		}
+		return side;
+	}
+
+	private int getOrderType(OrderType orderType) {
+		int type = 0;
+		switch (orderType) {
+		case Market: type = 1; break;
+		case Limit: type = 2; break;
+		default: new RuntimeException("invalid orde type");
+		}
+		return type;
 	}
 	
 	private class BookThread implements Runnable {
@@ -105,11 +132,10 @@ public class OrderExecutor {
 		
 		public void run() {
 			while (true) {
-				Order order;
 				try {
-					order = queue.take();
+					Order order = queue.take();
 					logger.info("add to orderBook orderId:" + order.getId());
-					OrderBook book = getOrderBook(order.getTicker(), order.getBuyOrSell());
+					OrderBook book = getOrderBook(order.getTicker(), order.getSide(), true);
 					Limit limit = book.insert(order.getLimitPrice());
 					limit.setOrder(order);
 				} catch (InterruptedException e) {

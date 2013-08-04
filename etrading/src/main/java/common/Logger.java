@@ -51,15 +51,18 @@ public class Logger {
 	}
 
 	public void debug(String msg) {
-		if (isDebug()) {
-			info(msg);
-		}
+		if (!isDebug()) return;
+		System.out.println(((readableTime) ? formatDateTime() : System.nanoTime()) + " DEBUG [" + id + "] " + msg);
 	}
 	
 	public void info(String msg) {
-		System.out.println(((readableTime) ? formatDateTime() : System.nanoTime()) + " [" + id + "] " + msg);
+		System.out.println(((readableTime) ? formatDateTime() : System.nanoTime()) + " INFO [" + id + "] " + msg);
 	}
 
+	public void error(String msg) {
+		System.out.println(((readableTime) ? formatDateTime() : System.nanoTime()) + " ERROR [" + id + "] " + msg);
+	}
+	
 	private String formatDateTime() {
 		synchronized(sdf) {
 			return sdf.format(new Date());
