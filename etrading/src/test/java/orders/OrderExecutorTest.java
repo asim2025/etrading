@@ -42,8 +42,16 @@ public class OrderExecutorTest {
 		executor.printOrderBook(ticker, OrderSide.BUY);
 	}
 
-	
 	@Test
+	public void matchTwoLimitOrders() throws InterruptedException {
+		int orderId1 = executor.addOrder("IBM", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
+		logger.info("orderId:" + orderId1);
+		int orderId2 = executor.addOrder("IBM", OrderType.Limit, OrderSide.SELL, 300, 25, System.nanoTime());
+		logger.info("orderId:" + orderId2);
+	}
+	
+	
+	//@Test
 	public void buildOrderBook() throws InterruptedException {
 		int orderId1 = executor.addOrder("IBM", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
 		logger.info("orderId:" + orderId1);
