@@ -70,7 +70,13 @@ public class Limit {
 		return orders.get(0);
 	}
 	
+	public boolean removeOrder(Order o) {
+		// TODO: adjust size
+		return orders.remove(o);
+	}
+	
 	public void setOrder(Order o) {
+		size += o.getShares();
 		orders.add(o);		
 	}
 	

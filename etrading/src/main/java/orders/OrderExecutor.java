@@ -1,5 +1,7 @@
 package orders;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -18,18 +20,14 @@ import common.Logger;
 public class OrderExecutor {
 	private final static Logger logger = Logger.getInstance(OrderExecutor.class);
 	
-	private final static Map<String, OrderBook> orderbooks = new ConcurrentHashMap<>(); // ticker+side to order book mapping 
-	private BlockingQueue<Order> buyQueue = new ArrayBlockingQueue<>(10000);
-	private BlockingQueue<Order> sellQueue = new ArrayBlockingQueue<>(10000);
+	private final static Map<String, OrderBookEntry> orderbooks = new ConcurrentHashMap<>(); // ticker level order book 
+	private BlockingQueue<Order> queue = new ArrayBlockingQueue<>(10000);
 	
-	private Thread buyBookThread;
-	private Thread sellBookThread;
+	private Thread executor;
 	
 	public OrderExecutor() {
-		buyBookThread = new Thread(new BookThread(buyQueue), "buy-thread");
-		sellBookThread = new Thread(new BookThread(sellQueue), "sell-thread");
-		buyBookThread.start();
-		sellBookThread.start();
+		executor = new Thread(new BookThread(queue), "order-executor");
+		executor.start();
 	}
 	
 	/*
@@ -51,11 +49,7 @@ public class OrderExecutor {
 		Order order = new Order(ticker, type, side, shares, (int) limitPrice * 100, entryTime);
 		logger.debug("orderId:" + order.getId());
 		
-		switch(side) {
-		case 1: buyQueue.put(order); break;
-		case 2: sellQueue.put(order); break;
-		}
-		
+		queue.put(order); 
 		return order.getId();
 	}
 
@@ -91,12 +85,52 @@ public class OrderExecutor {
 		}
 		
 		// find the order with best price and match and then remove order
-		//int type = order.getOrderType();
-		
-		return 0;
+		int shares = executeOrder(order, otherBook); // market or limit
+		return shares;
 	}
 	
+	
+	private int executeOrder(Order order, OrderBook otherBook) {
+		// find order in the otherbook
+		Limit otherLimit = otherBook.search(order.getLimitPrice());
+		
+		if (otherLimit == null) {
+			logger.info("otherBook does not contain limitPrice:" + order.getLimitPrice());
+			return 0;
+		}
+		
+		if (order.getShares() > otherLimit.getSize()) {
+			logger.info("order size exceeds number of shares in the orderBook.  orderSize:" + 
+					order.getShares() + ", orderBookSize:" + otherLimit.getSize());
+			return 0;
+		}
+		
+		List<Order> orders = new ArrayList<>();
+		
+		int shares = order.getShares();
+		for (Order o : otherLimit.getOrders()) {
+			int oshares = o.getShares();
+			logger.info("processing order:" + o.getId() + ", shares:" + oshares);
+			if (shares <= oshares) {
+				o.adjustShares(shares);
+			} else {
+				o.adjustShares(oshares);
+			}
+			if (o.getAdjShares()<=0) orders.add(o);
+			shares = shares - oshares;
+		}
 
+		for (Order o : orders) {
+			boolean status = otherLimit.removeOrder(o);
+			logger.info("removed order. status:" + status);
+		}
+		
+		if (otherLimit.getOrders().size() == 0) {
+			otherBook.delete(order.getLimitPrice());
+		}
+		return order.getShares();
+	}
+	
 	
 	public void printOrderBook(String ticker, OrderSide side) {
 		OrderBook book = getOrderBook(ticker, getSide(side), false);
@@ -110,14 +144,15 @@ public class OrderExecutor {
 	
 
 	private OrderBook getOrderBook(String ticker, int side, boolean createIt) {
-		String key = ticker+side;
-		OrderBook book = orderbooks.get(key);
-		if (createIt && book == null) {
-			book = new OrderBook();
-			orderbooks.put(key, book);
-			logger.info("created orderBook for key:" + key);
+		OrderBookEntry entry = orderbooks.get(ticker);
+		if (createIt && entry == null) {
+			entry = new OrderBookEntry();
+			orderbooks.put(ticker, entry);
+			logger.info("created orderBook for key:" + ticker);
 		}
-		return book;
+		
+		OrderBook book = (side == 1) ? entry.buy : entry.sell;
+		return book; 
 	}
 	
 	
@@ -171,6 +206,16 @@ public class OrderExecutor {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	public static class OrderBookEntry {
+		private OrderBook buy;
+		private OrderBook sell;
+		
+		public OrderBookEntry() {
+			buy = new OrderBook();
+			sell = new OrderBook();
 		}
 	}
 }

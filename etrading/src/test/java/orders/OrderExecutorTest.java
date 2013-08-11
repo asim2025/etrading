@@ -48,6 +48,20 @@ public class OrderExecutorTest {
 		logger.info("orderId:" + orderId1);
 		int orderId2 = executor.addOrder("IBM", OrderType.Limit, OrderSide.SELL, 300, 25, System.nanoTime());
 		logger.info("orderId:" + orderId2);
+		Thread.sleep(1000);
+		executor.printOrderBook("IBM", OrderSide.BUY);
+		executor.printOrderBook("IBM", OrderSide.SELL);
+	}
+	
+	@Test
+	public void matchLimitMarketOrders() throws InterruptedException {
+		int orderId1 = executor.addOrder("MSFT", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
+		logger.info("orderId:" + orderId1);
+		int orderId2 = executor.addOrder("MSFT", OrderType.Market, OrderSide.SELL, 300, 25, System.nanoTime());
+		logger.info("orderId:" + orderId2);
+		Thread.sleep(1000);
+		executor.printOrderBook("MSFT", OrderSide.BUY);
+		executor.printOrderBook("MSFT", OrderSide.SELL);
 	}
 	
 	
