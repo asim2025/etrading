@@ -28,7 +28,7 @@ public class OrderExecutorTest {
 		logger.setDebug(true);
 	}
 	
-	//@Test
+	@Test
 	public void addSingleLimitOrder() throws InterruptedException {
 		String ticker = "IBM";
 		int shares = 100;
@@ -65,7 +65,7 @@ public class OrderExecutorTest {
 	}
 	
 	
-	//@Test
+	@Test
 	public void buildOrderBook() throws InterruptedException {
 		int orderId1 = executor.addOrder("IBM", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
 		logger.info("orderId:" + orderId1);
@@ -88,7 +88,7 @@ public class OrderExecutorTest {
 	
 	
 
-	//@Test
+	@Test
 	public void addMultipleLimitOrder() throws InterruptedException {
 		
 		Random random = new Random();
