@@ -1,4 +1,4 @@
-package orders;
+package orderbook;
 
 /*
  * Basic order / trade object

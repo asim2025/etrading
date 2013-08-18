@@ -1,4 +1,4 @@
-package orders;
+package orderbook;
 
 public enum OrderSide {
 	BUY,

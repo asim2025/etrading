@@ -1,4 +1,4 @@
-package orders;
+package orderbook;
 
 /*
  * OrderBook stores limits by price in a binary tree data structure.

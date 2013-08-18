@@ -1,8 +1,12 @@
-package orders;
+package orderbook;
 
 import static org.junit.Assert.*;
 
 import java.util.Random;
+
+import orderbook.OrderExecutor;
+import orderbook.OrderSide;
+import orderbook.OrderType;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -1,4 +1,6 @@
-package orders;
+package orderbook;
+
+import orderbook.OrderType;
 
 import org.junit.Test;
 
