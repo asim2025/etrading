@@ -56,6 +56,18 @@ public class Logger {
 				" DEBUG [" + id + "] " + Thread.currentThread() + " " + msg);
 	}
 	
+	public void info(double d) {
+		info (d+"");
+	}
+	
+	public void info(int msg) {
+		info("msg"+"");
+	}
+	
+	public void info(long msg) {
+		info(msg+"");
+	}
+	
 	public void info(String msg) {
 		System.out.println(((readableTime) ? formatDateTime() : System.nanoTime()) + 
 				" INFO [" + id + "] " + Thread.currentThread() + " " + msg);
