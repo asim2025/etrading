@@ -1,45 +1,59 @@
-etrading
+Electronic Trading
 ========
 
-Build electronic trading real-time and low latency components in Java.
+The goal of this open source project is to build real-time and low latency electronic trading components in Java that can be used to build Exchanges/ECNs and Front Office Algo trading systems.  
 
-* Order Matching Engine
-  Build a fast limit order book. Execute orders once matched.
- 
-  latencies: 
-  
-  single stock 100k orders 
-  accept order: < 3ms (target)
-  find order: < 1ms (target)
-  remove order: < 3ms (target)
-  fill order: < 3ms (target)
- 
- 
-* Algo Trader
-  Use algorithms to generate orders.
- 
-  latencies:
-  < 10 ms (target) / algo based
- 
- 
-* Market Data Generator
-  Tick level market data generator to test trading components.
-  
-  latencies:
-  Two ticks per second per ticker.
+
+* Limit Order Book (LOB)
+  Maintain a list of unexecuted orders and match orders based on priority. Execute orders once matched.  
+
+  Latency Targets: less than 1 ms on find/remove/accept/fill orders.
+  Latency Current: approx 3-5 ms.
+
+
+* Market Data
+  Investigate a free source to download historical intraday market data feed and replay it to reflect
+  real-time market data conditions.
+
+  Latency Targets: 5 ticks per second
+
+  A simple market data simulator built as a temporary workaround to generate random prices between a 
+  range for each ticker.
   
   
- * Strategies to Performance
+* Exchange Gateway/Connectors
+  Support following FIX 4.2 connectivity from FO trading systems:
+  * Pre-Trade : Market Data
+  * Trade : Singe Order Handling (New/Cancel/Replace Order and Execution Report)
+  * Post Trade: Allocation (w/ FIX 4.4 support)
+
+  Latency Targets: less than 3 ms (excluding network latency).
+
+
+* Algorithmic Trading
+  Use well known algorithms to generate orders.  Evaulate CEPs such as Esper to implement order generation requests.
+
+  Latency Targets: less than 10 ms.
+
+  Reference Book: Algorithmic Trading and DMA by Barry Johnson
+  
+  
  
-   Data Structure
-   The order book uses a binary tree data structure to keep lookups to either O(1) or O(log n). 
-   Avoid O(n) or O(n2) data structures.
+ * Technical Strategies to be used to improve performance
+ 
+   * Data Structure
+     The order book uses a binary tree data structure to keep lookups to either O(1) or O(log n). 
+     Avoid O(n) or O(n2) data structures.
    
-   Threading
-   Lock contention can decrease system performance so multithreading is not used. 
-   The concurrency is achieved by passing messages to objects that don't require synchronization.
+   * Threading
+     Avoid multi-threading in core components if lock contention will degrade system performance. 
+     Instead achieve concurrency by passing messages to objects that don't require synchronization.
    
-   Memory/Garbage Collection
-   Create object pools to avoid garbage collection of objects.
-   
-   
+   * Memory/Garbage Collection
+     Create object pools to avoid garbage collection of objects.
+    
+   * JVM Tunning
+     
+   * LINUX Tunning
+
+
