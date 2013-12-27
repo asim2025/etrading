@@ -1,0 +1,23 @@
+
+Follow these steps to download and compile this project in a local environment:
+
+Required Software:
+1. JDK 1.7.x
+2. Eclipse
+3. Eclipse Maven Plugin (e.g. Maven Integration for Eclipse)
+4. Eclipse Git Plugin (e.g for EGit)
+
+Step 1 - Download GIT Repository
+1. Eclipse -> File -> Import -> GIT
+2. Clone URI
+3. URI : https://github.com/asim2025/etrading and enter authentication information.
+4. Click Finish
+
+
+Step 2 - Setup Eclipse Project
+1. Eclipse -> File -> Import -> Maven 
+2. Navigate to local Git repository and pom.xml
+
+
+Step 3 - Verify
+
