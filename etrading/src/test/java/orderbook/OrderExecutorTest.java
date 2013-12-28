@@ -4,14 +4,13 @@ import static org.junit.Assert.*;
 
 import java.util.Random;
 
-import orderbook.OrderExecutor;
-import orderbook.OrderSide;
-import orderbook.OrderType;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import common.Logger;
+import exchange.orderbook.OrderExecutor;
+import exchange.orderbook.OrderSide;
+import exchange.orderbook.OrderType;
 
 
 /*

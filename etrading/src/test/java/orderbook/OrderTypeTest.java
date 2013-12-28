@@ -1,8 +1,8 @@
 package orderbook;
 
-import orderbook.OrderType;
-
 import org.junit.Test;
+
+import exchange.orderbook.OrderType;
 
 public class OrderTypeTest {
 
