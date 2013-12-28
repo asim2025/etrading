@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import common.Logger;
 import common.Timer;
+import exchange.marketdata.MarketDataFeed;
 
 public class MarketDataFeedTest {
 	private Logger logger = Logger.getInstance(MarketDataFeedTest.class);

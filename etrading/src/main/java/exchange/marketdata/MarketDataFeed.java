@@ -1,4 +1,4 @@
-package marketdata;
+package exchange.marketdata;
 
 import java.text.DecimalFormat;
 import java.util.Random;
