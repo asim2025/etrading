@@ -1,4 +1,4 @@
-package orderbook;
+package exchange.orderbook;
 
 import org.junit.Test;
 

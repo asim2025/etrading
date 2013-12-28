@@ -1,4 +1,4 @@
-package orderbook;
+package exchange.orderbook;
 
 import static org.junit.Assert.*;
 

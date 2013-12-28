@@ -1,4 +1,4 @@
-package marketdata;
+package exchange.marketdata;
 
 import static org.junit.Assert.*;
 
