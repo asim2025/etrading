@@ -9,6 +9,38 @@
   		<artifactId>junit</artifactId>
   		<version>4.11</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.slf4j</groupId>
+  		<artifactId>slf4j-api</artifactId>
+  		<version>1.7.5</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.apache.mina</groupId>
+  		<artifactId>mina-core</artifactId>
+  		<version>1.1.7</version>
+  	</dependency>
+  	
+  	<dependency>
+    	<groupId>org.quickfixj</groupId>
+    	<artifactId>quickfixj</artifactId>
+    	<version>1.5.3</version>
+    	<scope>system</scope>
+    	<systemPath>${project.basedir}/lib/quickfixj-core-1.5.3.jar</systemPath>
+	</dependency>
+
+  	<dependency>
+    	<groupId>org.quickfixj</groupId>
+    	<artifactId>quickfixj-msg</artifactId>
+    	<version>1.5.3</version>
+    	<scope>system</scope>
+    	<systemPath>${project.basedir}/lib/quickfixj-msg-fix42-1.5.3.jar</systemPath>
+	</dependency>
+
+  	<dependency>
+  		<groupId>org.slf4j</groupId>
+  		<artifactId>slf4j-simple</artifactId>
+  		<version>1.7.5</version>
+  	</dependency>
   </dependencies>
   <build>
   <plugins>
