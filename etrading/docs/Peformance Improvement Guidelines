@@ -4,7 +4,7 @@ Performance Improvement Guidelines
 Performance tuning of a low latency system is a continous exercise that requires monitoring and fine tuning 
 application code, run-time (JVM) and OS.
 
-I read several performance related articles and books (see references section). 
+I read several performance related articles and books while working on this project (see references section). 
 
 Following are some of the tips/tools etc that can be used to improve performance based on my professional
 experience and research: 
@@ -21,22 +21,26 @@ B. Data Structures
 C. Concurrency 
    Avoid multi-threading in core components if lock contention will degrade system performance. 
    Instead achieve concurrency by passing messages to objects that don't require synchronization.
+   When using mult-threading then understand Amdhal Law.
 D. Object Pools 
    Create object pools to avoid too many temporary objects.
 
 
 2. Java Run-time
+
 A. JVM warm-up
    Oracle/Sun doesn't recommend it but there are several articles/discussions where it is advisable to 
-   warm up JVM so hotspot/jit can kick-in. 
+   warm up JVM so hotspot/jit can kick-in. I agree since we want the trading application to run as fast as
+   possible.
 B. Garbage Collector
    Understand garbage collectors supplied by Java and use the one that is appropriate for the application.
    Use Concurrent GC -XX:+UseParNewGC and -XX:+UseConcMarkSweepGC
-   
-
+C. Reycle JVM
+   Find a time in day to recycle JVM to clean up resources including fragmented memory left after GCs.   
 
 
 3. Operating System (UNIX/LINUX)
+
 A. Disable CPU C-States
    This prevents the CPU from going into power saving mode, which can cause latency when the CPU needs to power back up. 
    (Kernel parameter intel_idle.max_cstate=0) 
@@ -58,10 +62,12 @@ G. Move interrupts onto a specific CPU (specifically ethernet IRQs local to the 
 H. Use RDMA NICs and their associated zero copy APIs for out networking (solarflare) 
 
 
-References:
+4. References:
 
-1. Mechanical Sympothy Blog - http://mechanical-sympathy.blogspot.com/
-2. Java Performance Book by Charlie Hunt, 2011
-3. SEDA Architecture - http://www.eecs.harvard.edu/~mdw/proj/seda/
-4. Actor Model - http://en.wikipedia.org/wiki/Actor_model
-5. LinkedIn Groups on HFT, Algo Trading
+A. Mechanical Sympothy Blog - http://mechanical-sympathy.blogspot.com/
+B. Java Performance Book by Charlie Hunt, 2011
+C. SEDA Architecture - http://www.eecs.harvard.edu/~mdw/proj/seda/
+D. Actor Model - http://en.wikipedia.org/wiki/Actor_model
+E. LinkedIn Groups on HFT, Algo Trading
+F. Amdhal Law - http://en.wikipedia.org/wiki/Amdahl%27s_law
+
