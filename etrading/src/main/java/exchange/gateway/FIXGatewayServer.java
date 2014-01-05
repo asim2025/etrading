@@ -60,9 +60,10 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 	}
 
 	@Override
-	public void fromApp(Message arg0, SessionID arg1) throws FieldNotFound,
+	public void fromApp(Message message, SessionID sessionId) throws FieldNotFound,
 			IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
-		log.info("fromApp - message:" + arg0 + ", sessionID:" + arg1);
+		log.info("fromApp - message:" + message + ", sessionID:" + sessionId);
+		crack(message, sessionId);
 	}
 
 	@Override
