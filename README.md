@@ -41,21 +41,6 @@ https://github.com/asim2025/etrading/blob/master/etrading/docs/Etrading%20Techni
   Reference Book: Algorithmic Trading and DMA by Barry Johnson
   
   
- 
- * Technical Strategies to be used to improve performance  
-   * Data Structure  
-     The order book uses a binary tree data structure to keep lookups to either O(1) or O(log n). 
-     Avoid O(n) or O(n2) data structures.
-   
-   * Threading  
-     Avoid multi-threading in core components if lock contention will degrade system performance. 
-     Instead achieve concurrency by passing messages to objects that don't require synchronization.
-   
-   * Memory/Garbage Collection  
-     Create object pools to avoid garbage collection of objects.
-    
-   * JVM Tunning  
-     
-   * LINUX Tunning  
-
+* Technical Strategies to be used to improve performance  
+https://github.com/asim2025/etrading/blob/master/etrading/docs/Peformance%20Improvement%20Guidelines
 
