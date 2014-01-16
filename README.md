@@ -18,7 +18,7 @@ https://github.com/asim2025/etrading/blob/master/etrading/docs/Etrading%20Techni
   Investigate a free source to download historical intraday market data feed and replay it to reflect
   real-time market data conditions.
 
-  Throughput Targets: 5 ticks per second
+  Targets: 50k ticks per second
 
   A simple market data simulator built as a temporary workaround to generate random prices between a 
   range for each ticker.
