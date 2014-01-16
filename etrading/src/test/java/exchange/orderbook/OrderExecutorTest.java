@@ -1,6 +1,6 @@
 package exchange.orderbook;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Random;
 
@@ -8,9 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import common.Logger;
-import exchange.orderbook.OrderExecutor;
-import exchange.orderbook.OrderSide;
-import exchange.orderbook.OrderType;
 
 
 /*
@@ -25,7 +22,7 @@ public class OrderExecutorTest {
 	private OrderExecutor executor;
 	
 	@Before
-	public void init() {
+	public void init() throws Exception {
 		executor = new OrderExecutor();
 		logger.showReadableTime(true);
 		logger.setDebug(true);

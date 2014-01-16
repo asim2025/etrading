@@ -1,5 +1,6 @@
 package exchange.orderbook;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 
 import common.Logger;
+import common.messaging.MessageConsumer;
+import common.messaging.MessageListener;
 
 /*
  * Process and manage orders received from upstream.
@@ -18,16 +21,34 @@ import common.Logger;
  * @author asim2025
  */
 public class OrderExecutor {
-	private final static Logger logger = Logger.getInstance(OrderExecutor.class);
+	private final static Logger log = Logger.getInstance(OrderExecutor.class);
+	private final static String ORDER_QUEUE = "Order_Exec_Queue";
 	
 	private final static Map<String, OrderBookEntry> orderbooks = new ConcurrentHashMap<>(); // ticker level order book 
 	private BlockingQueue<Order> queue = new ArrayBlockingQueue<>(10000);
 	
 	private Thread executor;
+	private MessageConsumer consumer;
 	
-	public OrderExecutor() {
-		executor = new Thread(new BookThread(queue), "order-executor");
+	public static void main(String[] args) throws Exception {
+		@SuppressWarnings("unused")
+		OrderExecutor executor = new OrderExecutor();
+		Thread.currentThread().join();
+	}
+	
+	public OrderExecutor() throws IOException {
+		executor = new Thread(new BookThread(queue), "OrderExecutor");
 		executor.start();
+		
+		consumer = new MessageConsumer(ORDER_QUEUE);
+		consumer.addListener(new MessageListener() {
+
+			@Override
+			public void onMessage(Object o) {
+				log.info("order recevied:" + o);
+				queue.add((Order) o);
+			}
+		});
 	}
 	
 	/*
@@ -41,13 +62,13 @@ public class OrderExecutor {
 		int side = getSide(orderSide);
 		int type = getOrderType(orderType);
 		
-		if (logger.isDebug()) {
-			logger.debug("addOrder: ticker:" + ticker + ",side:" + side + ",type:" + type +
+		if (log.isDebug()) {
+			log.debug("addOrder: ticker:" + ticker + ",side:" + side + ",type:" + type +
 					",shares:" + shares + ",limitPrice:" + limitPrice + ",entryTime:" + entryTime);
 		}
 		
 		Order order = new Order(ticker, type, side, shares, (int) limitPrice * 100, entryTime);
-		logger.debug("orderId:" + order.getId());
+		log.debug("orderId:" + order.getId());
 		
 		queue.put(order); 
 		return order.getId();
@@ -80,7 +101,7 @@ public class OrderExecutor {
 		// find other side order book
 		OrderBook otherBook = getOrderBook(ticker, side == 1 ? 2 : 1, false);
 		if (otherBook == null) {
-			logger.info("orderBook for other side not found for ticker.side:" + ticker + side);
+			log.info("orderBook for other side not found for ticker.side:" + ticker + side);
 			return 0;
 		}
 		
@@ -95,12 +116,12 @@ public class OrderExecutor {
 		Limit otherLimit = otherBook.search(order.getLimitPrice());
 		
 		if (otherLimit == null) {
-			logger.info("otherBook does not contain limitPrice:" + order.getLimitPrice());
+			log.info("otherBook does not contain limitPrice:" + order.getLimitPrice());
 			return 0;
 		}
 		
 		if (order.getShares() > otherLimit.getSize()) {
-			logger.info("order size exceeds number of shares in the orderBook.  orderSize:" + 
+			log.info("order size exceeds number of shares in the orderBook.  orderSize:" + 
 					order.getShares() + ", orderBookSize:" + otherLimit.getSize());
 			return 0;
 		}
@@ -110,7 +131,7 @@ public class OrderExecutor {
 		int shares = order.getShares();
 		for (Order o : otherLimit.getOrders()) {
 			int oshares = o.getShares();
-			logger.info("processing order:" + o.getId() + ", shares:" + oshares);
+			log.info("processing order:" + o.getId() + ", shares:" + oshares);
 			if (shares <= oshares) {
 				o.adjustShares(shares);
 			} else {
@@ -122,7 +143,7 @@ public class OrderExecutor {
 
 		for (Order o : orders) {
 			boolean status = otherLimit.removeOrder(o);
-			logger.info("removed order. status:" + status);
+			log.info("removed order. status:" + status);
 		}
 		
 		if (otherLimit.getOrders().size() == 0) {
@@ -135,9 +156,9 @@ public class OrderExecutor {
 	public void printOrderBook(String ticker, OrderSide side) {
 		OrderBook book = getOrderBook(ticker, getSide(side), false);
 		if (book == null) {
-			logger.error("book not found");
+			log.error("book not found");
 		} else {
-			logger.info("order book:");
+			log.info("order book:");
 			book.printOrderBook();
 		}
 	}
@@ -148,7 +169,7 @@ public class OrderExecutor {
 		if (createIt && entry == null) {
 			entry = new OrderBookEntry();
 			orderbooks.put(ticker, entry);
-			logger.info("created orderBook for key:" + ticker);
+			log.info("created orderBook for key:" + ticker);
 		}
 		
 		OrderBook book = (side == 1) ? entry.buy : entry.sell;
@@ -190,16 +211,16 @@ public class OrderExecutor {
 				try {
 					Order order = queue.take();
 					int orderId = order.getId();
-					logger.info("processing orderId:" + orderId);
+					log.info("processing orderId:" + orderId);
 					
 					OrderBook book = getOrderBook(order.getTicker(), order.getSide(), true);
-					logger.info("matching orderId:" + orderId);
+					log.info("matching orderId:" + orderId);
 					if (execution(order, book) == order.getShares()) {
-						logger.info("matched orderId:" + orderId);
+						log.info("matched orderId:" + orderId);
 						continue;
 					}
 					
-					logger.info("adding to lob, orderId:" + orderId);
+					log.info("adding to lob, orderId:" + orderId);
 					Limit limit = book.insert(order.getLimitPrice());
 					limit.setOrder(order);
 				} catch (InterruptedException e) {

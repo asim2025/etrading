@@ -30,6 +30,7 @@ public class MessageProducer {
 	
 	
 	public synchronized void send(Object msg) {
+		log.info("sending message:" + msg);
 		Excerpt excerpt = chr.createExcerpt();
 		excerpt.startExcerpt(4096); // 4k bytes
 		excerpt.writeObject(msg);

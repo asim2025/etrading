@@ -1,6 +1,10 @@
 package exchange.gateway;
 
+import java.io.IOException;
+
 import common.Logger;
+import common.messaging.MessageProducer;
+import exchange.orderbook.Order;
 import quickfix.Application;
 import quickfix.DefaultMessageFactory;
 import quickfix.DoNotSend;
@@ -33,8 +37,10 @@ import quickfix.fix42.NewOrderSingle;
 public class FIXGatewayServer extends MessageCracker implements Application {
 	private final static Logger log = Logger.getInstance(FIXGatewayServer.class);
 
-	// TODO: make path relative
+	// TODO: use config file
 	private static final String CONFIG = "C:/Users/asim/git/etrading/etrading/src/main/resources/gatewayserver.properties";
+	private static final String ORDER_QUEUE = "Order_Exec_Queue";
+	private MessageProducer producer;
 	
 	public static void main(String[] args) throws Exception {
 		SessionSettings settings = new SessionSettings(CONFIG);
@@ -47,10 +53,24 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 		socketAcceptor.start();
 	}
 	
+	public FIXGatewayServer() throws IOException {
+		producer = new MessageProducer(ORDER_QUEUE);
+	}
+	
 	@Override
-	public void onMessage(NewOrderSingle message, SessionID sessionID) {
+	public void onMessage(NewOrderSingle message, SessionID sessionID) throws FieldNotFound {
 		log.info("NewOrderSingle - message:" + message + ", sessionID:" + sessionID);
+		String ticker = message.getSymbol().getValue();
+		int ordType = message.getOrdType().getValue();
+		char side = message.getSide().getValue();
+		int shares = (int) message.getOrderQty().getValue();
+		double price = message.getPrice().getValue();
+		int nprice = normalizePrice(price);
+		long entryTime = message.getTransactTime().getValue().getTime();
 		
+		Order o = new Order(ticker, ordType, side, shares, nprice, entryTime);
+		log.info("sending order:" + o);
+		producer.send(o);
 	}
 	
 	@Override
@@ -91,4 +111,13 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 		log.info("toApp - message:" + arg0 + ", sessionID:" + arg1);
 	}
 
+	private int normalizePrice(double prc) {
+		return (int) prc;	// TODO: convert 123.13 to 12313
+	}
+	
+	/*
+	private double denormalizePrice(int prc) {
+		return 0;  // TODO: convert 12313 to 123.13
+	}
+	*/
 }
