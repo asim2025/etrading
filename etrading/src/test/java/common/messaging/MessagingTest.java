@@ -19,11 +19,12 @@ public class MessagingTest {
 
 	@Test
 	public void sendAndReceive() throws Exception {
-		MessageProducer producer = new MessageProducer();
-		producer.send("testDest1", new Date());
-		MessageConsumer consumer = new MessageConsumer();
+		MessageProducer producer = new MessageProducer("testDest1");
+		producer.send(new Date());
+		
+		MessageConsumer consumer = new MessageConsumer("testDest1");
 		MessageListenerImpl impl = new MessageListenerImpl();
-		consumer.register("testDest1", impl);
+		consumer.addListener(impl);
 		Thread.sleep(10*1000);
 	}
 	

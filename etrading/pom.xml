@@ -36,10 +36,16 @@
     	<systemPath>${project.basedir}/lib/quickfixj-msg-fix42-1.5.3.jar</systemPath>
 	</dependency>
 
+  	
   	<dependency>
   		<groupId>org.slf4j</groupId>
   		<artifactId>slf4j-simple</artifactId>
   		<version>1.7.5</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>com.higherfrequencytrading</groupId>
+  		<artifactId>chronicle</artifactId>
+  		<version>1.7.2</version>
   	</dependency>
   </dependencies>
   <build>

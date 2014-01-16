@@ -10,64 +10,67 @@ Following are some of the tips/tools etc that can be used to improve performance
 experience and research: 
 
 
-1. Application Design and Implementation
+I. Application Design and Implementation
 
-A. Event Driven Architecture
+1. Event Driven Architecture
    Independent components that communicate with each other using messaging.  Event driven systems are inherently
    simpler and loosly coupled.     
-B. Data Structures 
+2. Data Structures 
    Use data structure to keep lookups to either O(1) or O(log n). Avoid O(n) or O(n2) data structures.
    Use lock free data structures where possible.
-C. Concurrency 
+3. Concurrency 
    Avoid multi-threading in core components if lock contention will degrade system performance. 
    Instead achieve concurrency by passing messages to objects that don't require synchronization.
    When using mult-threading then understand Amdhal Law.
-D. Object Pools 
+4. Object Pools 
    Create object pools to avoid too many temporary objects.
 
 
-2. Java Run-time
+II. Java Run-time
 
-A. JVM warm-up
+1. JVM warm-up
    Oracle/Sun doesn't recommend it but there are several articles/discussions where it is advisable to 
    warm up JVM so hotspot/jit can kick-in. I agree since we want the trading application to run as fast as
    possible.
-B. Garbage Collector
+2. Garbage Collector
    Understand garbage collectors supplied by Java and use the one that is appropriate for the application.
    Use Concurrent GC -XX:+UseParNewGC and -XX:+UseConcMarkSweepGC
-C. Reycle JVM
+3. Reycle JVM
    Find a time in day to recycle JVM to clean up resources including fragmented memory left after GCs.   
 
 
-3. Operating System (UNIX/LINUX)
+III. Operating System (UNIX/LINUX)
 
-A. Disable CPU C-States
+1. Disable CPU C-States
    This prevents the CPU from going into power saving mode, which can cause latency when the CPU needs to power back up. 
    (Kernel parameter intel_idle.max_cstate=0) 
-B. Disable hyperthreading. 
+2. Disable hyperthreading. 
    This prevents other threads being scheduled onto your core and invalidating your cache. 
    (Manually achieved by echo 0 > /sys/devices/system/node/node0/cpu1/online etc.) 
-C. Isolate CPUs from the scheduler. 
+3. Isolate CPUs from the scheduler. 
    This prevents the scheduler from scheduling work onto isolcated CPUs, 
    preventing your work from being scheduled off, cache invalidation etc. (isolcpus) 
-D. Pin threads to CPUs. 
+4. Pin threads to CPUs. 
    This prevents threads from moving between cores and invalidating caches etc. (sched_setaffinity) 
-E. Lock memory pages and prefault the stack. 
+5. Lock memory pages and prefault the stack. 
    This prevents minor page faults as memory pages are paged in. (mlockall) 
-F. Set the scheduler for realtime threads to FIFO / up the priority. 
+6. Set the scheduler for realtime threads to FIFO / up the priority. 
    This allows our threads to preempt other threads which could be on our cores 
    (unlikely, given that we've used isolcpus) (sched_setscheduler) 
-G. Move interrupts onto a specific CPU (specifically ethernet IRQs local to the NUMA node that the NIC is on) 
+7. Move interrupts onto a specific CPU (specifically ethernet IRQs local to the NUMA node that the NIC is on) 
    (/proc/irq) 
-H. Use RDMA NICs and their associated zero copy APIs for out networking (solarflare) 
+8. Use RDMA NICs and their associated zero copy APIs for out networking (solarflare) 
 
 
-4. References:
+IV. References:
 
-A. Mechanical Sympothy Blog - http://mechanical-sympathy.blogspot.com/
-B. Java Performance Book by Charlie Hunt, 2011
-C. SEDA Architecture - http://www.eecs.harvard.edu/~mdw/proj/seda/
-D. Actor Model - http://en.wikipedia.org/wiki/Actor_model
-E. LinkedIn Groups on HFT, Algo Trading
-F. Amdhal Law - http://en.wikipedia.org/wiki/Amdahl%27s_law
+1. Mechanical Sympothy Blog - http://mechanical-sympathy.blogspot.com/
+2. Java Performance Book by Charlie Hunt, 2011
+3. SEDA Architecture - http://www.eecs.harvard.edu/~mdw/proj/seda/
+4. Actor Model - http://en.wikipedia.org/wiki/Actor_model
+5. LinkedIn Groups on HFT, Algo Trading
+6. Amdhal Law - http://en.wikipedia.org/wiki/Amdahl%27s_law
+7. High Perf Library Review - http://vanillajava.blogspot.com/2012/02/high-performance-libraries-in-java.html
+8. MentaBlog - http://mentablog.soliveirajr.com/
+
 

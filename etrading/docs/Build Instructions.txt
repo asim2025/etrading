@@ -6,6 +6,8 @@ Required Software:
 2. Eclipse
 3. Eclipse Maven Plugin (e.g. Maven Integration for Eclipse)
 4. Eclipse Git Plugin (e.g for EGit)
+5. Chronicles 1.7 or later
+6. QuickFIX/J 1.5 or later
 
 Step 1 - Download GIT Repository
 1. Eclipse -> File -> Import -> GIT
