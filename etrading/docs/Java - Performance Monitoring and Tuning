@@ -1,0 +1,28 @@
+Java - Performance Monitoring and Tuning
+(source: https://github.com/asim2025/etrading.git)
+
+This document contains Java performance monitoring and tuning guidelines for a low latency Java application.
+The master document contains high level ideas and references.
+
+
+
+A. Basics
+
+Java Virtual Processor  (Runtime.availableProcessors() - number of virtual processors is the number of 
+hardware threads on the system).
+
+
+
+
+B. 
+
+1. JVM warm-up
+   Oracle/Sun doesn't recommend it but there are several articles/discussions where it is advisable to 
+   warm up JVM so hotspot/jit can kick-in. I agree since we want the trading application to run as fast as
+   possible.
+2. Garbage Collector
+   Understand garbage collectors supplied by Java and use the one that is appropriate for the application.
+   Use Concurrent GC -XX:+UseParNewGC and -XX:+UseConcMarkSweepGC
+3. Reycle JVM
+   Find a time in day to recycle JVM to clean up resources including fragmented memory left after GCs.   
+

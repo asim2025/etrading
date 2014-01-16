@@ -1,0 +1,36 @@
+Master - Performance Monitoring and Tuning 
+(source: https://github.com/asim2025/etrading.git)
+
+Performance tuning of a Java based low latency system is a continious exercise that requires monitoring, 
+profiling and tuning of application code, run-time (JVM) and OS.
+
+There is wealth of information on the internet and printed media. I have listed the references at the
+end of the document that I found very useful in practice.
+
+I have created separate performance monitoring, tuning tips/tools for Java, Linux and Application design.
+
+First some definitions:
+
+Performance Monitoring
+
+
+Performance Porfiling
+
+
+Performance Tuning
+
+
+
+
+B. References:
+
+1. Mechanical Sympothy Blog - http://mechanical-sympathy.blogspot.com/
+2. Java Performance Book by Charlie Hunt, 2011
+3. SEDA Architecture - http://www.eecs.harvard.edu/~mdw/proj/seda/
+4. Actor Model - http://en.wikipedia.org/wiki/Actor_model
+5. LinkedIn Groups on HFT, Algo Trading
+6. Amdhal Law - http://en.wikipedia.org/wiki/Amdahl%27s_law
+7. High Perf Library Review - http://vanillajava.blogspot.com/2012/02/high-performance-libraries-in-java.html
+8. MentaBlog - http://mentablog.soliveirajr.com/
+
+

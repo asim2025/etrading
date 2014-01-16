@@ -1,0 +1,89 @@
+Linux - Performance Monitoring and Tuning
+(source: https://github.com/asim2025/etrading.git)
+
+This document contains LINUX performance monitoring and tuning guidelines for a low latency Java application.
+The master document contains high level ideas and references.
+
+A. Monitoring
+
+1.	CPU Utilization
+	Following command line tools can be used to monitor CPU utilization:
+	
+	vmstat - command to show combined CPU utilization across all virtual processors.
+		us - shows user CPU utilization percentage.
+		sy - shows system/kernel CPU utilization percentage.
+		id - shows CPU idle time percentage.
+		
+	mpstat - command to show CPU utilization per virtual processor.		
+		us - user in %
+		sys- system in %
+		wt - wait time (always 0)
+		idl- idle time in %
+
+	top	-	command to show process statistics and memory utilization.
+	
+2.	CPU Scheduler Run Queue
+	The run queue holds light weight processes (LWP) that are ready to run but waiting for a CPU.
+	A run queue depth reaches 4 times the number of virtual processors or greater then system 
+	is saturated with work.
+	
+	Two Resolutions:
+	1) Add more CPUs and distribute the work across all CPUs.
+	2) Profile application and make application or JVM runtime changes.
+	
+	vmstat - displays LWP in the run queue in the "r" column.
+	
+
+3.	Memory Utilization
+	Following utilities can be used to monitor memory:
+	
+	vmstat - command line tool
+	free - 	available free memory in bytes
+	si - 	swap in activity
+	so -	swap out activity
+	
+	When free memory value decreases and si/so values increase then the system is using swap memory.
+	The memory swap negatively impacts performance of a running application.
+	 
+	/proc/meminfo
+	
+	top - command line tool
+
+
+4.	Network I/O Utilization
+	netstat - command line tool can be used to monitor network utilization.
+
+	Displays packets sent and received per second along with errors and collisions.
+	It is difficult to tell from the netstat output if network utilization is limiting application's performance.
+	However, a large number of collisions should be a concern.
+	
+
+5.	Disk Utilization
+	iostat - command line tool to monitor I/O and CPU utilization.
+	column %util reports disk I/O utilization percentage.
+	
+	example, iostat -xm 
+
+
+B. Performance Tuning
+
+1. Disable CPU C-States
+   This prevents the CPU from going into power saving mode, which can cause latency when the CPU needs to power back up. 
+   (Kernel parameter intel_idle.max_cstate=0) 
+2. Disable hyperthreading. 
+   This prevents other threads being scheduled onto your core and invalidating your cache. 
+   (Manually achieved by echo 0 > /sys/devices/system/node/node0/cpu1/online etc.) 
+3. Isolate CPUs from the scheduler. 
+   This prevents the scheduler from scheduling work onto isolcated CPUs, 
+   preventing your work from being scheduled off, cache invalidation etc. (isolcpus) 
+4. Pin threads to CPUs. 
+   This prevents threads from moving between cores and invalidating caches etc. (sched_setaffinity) 
+5. Lock memory pages and prefault the stack. 
+   This prevents minor page faults as memory pages are paged in. (mlockall) 
+6. Set the scheduler for realtime threads to FIFO / up the priority. 
+   This allows our threads to preempt other threads which could be on our cores 
+   (unlikely, given that we've used isolcpus) (sched_setscheduler) 
+7. Move interrupts onto a specific CPU (specifically ethernet IRQs local to the NUMA node that the NIC is on) 
+   (/proc/irq) 
+8. Use RDMA NICs and their associated zero copy APIs for out networking (solarflare) 
+
