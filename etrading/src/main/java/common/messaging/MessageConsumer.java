@@ -71,7 +71,7 @@ public class MessageConsumer {
 					size = excerpt.size();
 					saveIndex(index);					
 				}		
-				excerpt.finish();
+				excerpt.close();
 				
 				try {
 					Thread.sleep(1);
