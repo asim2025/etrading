@@ -5,24 +5,204 @@ This document contains Java performance monitoring and tuning guidelines for a l
 The master document contains high level ideas and references.
 
 
+A.	Performance Tuning (Step by Step)
+It is important to understand JVM internals, however, when rushed (when I am at times) we need a quick
+step-by-step guide to improve application performance.
 
-A. Basics
+-	Assumptions - application is running in a steady state (i.e. already initialized)
 
-Java Virtual Processor  (Runtime.availableProcessors() - number of virtual processors is the number of 
-hardware threads on the system).
+-	Application SLAs - need to know application current SLAs
+	- availability - available for use when 1 or more components break down.
+	- managebility - operational costs including app configuration times.
+	- throughput - amount of work that can be done per time unit.
+	- latency - elapsed time to complete a task.
+	- footprint - amount of memory required
+	- start up time - amount of time required to go into steady state.
+	
+-	Rank Application SLAs from highest to lowest.
+
+-	Select JVM Deployment model
+	- Single JVM - reduce managebility, less memory footprint cost. availability risk due single point of failure.
+	- Multiple JVMs - improved availability and lower latency. higher managebility cost.
+
+-	Select JVM Runtime
+	- 32bit vs. 64 bit JVM
+	- client vs. server JVM
+	
+-	Select GC
+	- goal throughput: use ParallelGC or ParallelOldGC
+	- goal latency: use CMS
+	Refer to GC section later in the document.
+
+-	Select Memory Footprint
+	Estimate memory required to run the application and size up overall Java heap size, including young gen sizes.
+	Refer to GC section later in the document on the command line parameters to monitor heap size and consumption
+	and calculate live data size. 
+	Initial and Maximum heap size should be 3-4 times of the live data size of old gen.
+	Initial and Maximum size of young gen should be 1.5 times the old gen live data dize.
+	Initial and Maximum perm size should be 1.5 times larger than the live data size of perm gen.
+	Note the JVM heap size does not exceed physical memory on the machine.
+	
+-	Tune Latency/Responsiveness
+	Refine Java heap size
+	Evaluate GC durations/frequency and trying different GCs. 	
+
+-	If above steps don't meeting SLAs then other options are to upgrade hardware or
+	change application implementation.
 
 
+B.	JVM Basics
+Please check Oracle/Sun or OpenJDK sites for details.
+
+-	The JVM consists of 3 components
+	- GC 
+	- JIT Compiler 
+	- HotSpot VM runtime.
+
+-	HotSpot VM comes in two flavors
+	- client
+	- server  (note this document will only focus on server)
+
+-	HotSpot VM accepts 3 types of command line options.  The commmand line options control internal variables
+	of the VM.
+	- standard		stable across Java releases
+	- non-standard	use -X prefix and are subject change between releases.
+	- developer		use -XX prefix are subject to change between releases.
+	
+-	Ordinary Object Pointers (oops) on 64 bit VM
+	HotSpot internal representation of Java objects stored in 64 bit. There is a performance penalty of 
+	8%-15% because fewer oops are can be stored on CPU cache lines as compared to 32 bit oops (of 32 bit VM).
+	-XX:+UseCompressedOops command option to compress oops on 64 bit VMs.
+ 
+-	Use following command line options for VM crashes
+	-XX:ErrorFile=<path> - path and file name, default is hs_err_pid<pid>.log
+	-XX:OnError=cmd args... - run a cmd after crash
+	-XX:HeapDumpPath=<path> - heap dump
+ 	 
+-	new Object() operation cost is 10 assembly instructions on average.
+
+-	Default Ergonomic values
+	-XX:+PrintCommandLineFlags -version
+
+-	Java Virtual Processor  (Runtime.availableProcessors() - number of virtual processors is the number of
+	hardware threads on the system).
 
 
-B. 
+C. Garbage Collectors
+The GC reclaim unreachable objects per JVM specification.  The GC behavior and efficiency heavily influences 
+application performance.
 
-1. JVM warm-up
-   Oracle/Sun doesn't recommend it but there are several articles/discussions where it is advisable to 
-   warm up JVM so hotspot/jit can kick-in. I agree since we want the trading application to run as fast as
-   possible.
-2. Garbage Collector
-   Understand garbage collectors supplied by Java and use the one that is appropriate for the application.
-   Use Concurrent GC -XX:+UseParNewGC and -XX:+UseConcMarkSweepGC
-3. Reycle JVM
-   Find a time in day to recycle JVM to clean up resources including fragmented memory left after GCs.   
+-	GC assumptions
+	most allocated objects become unreachable quickly.
+	few references exist from older to younger objects.
+	
+-	Generational Design
+	young generation - most new objects allocated in this generation. consists of eden and 2 survivor spaces.
+	old generation - long lived objects promoted from young generation.
+	permanent generation - class data structures, interned strings and other meta data.
+	
+-	GC algorithms
+	Serial
+		Young gen GC - stop the world
+		Old gen GC - stop the world
+		Uses single processor
+		Mark-sweep-compact
+		
+	Parallel
+		Young gen GC - stop the world
+		Old gen GC - stop the world
+		Young gen GC run in parallel
+		Old gen GC run in single thread (use Parallel Old GC for parallel collection)
+		Also known as Throughput collector
+		Appropriate for batch applications 
+		Compacts memory
+		
+	Concurrent	
+		Concurrent Mark Sweep (CMS)
+		Initial Mark Phase - short pause to identify reachable objects outside the old gen
+		Concurrent Marking Phase - mark live objects from above
+		Remark Phase - short pause to finalize live objects since references might have been updated during previous phase
+		Concurrent Sweep Phase - deallocate unreachable objects w/o compacting memory
+		Generally requires more memory because of memory fragmentation
+		GC runs longer due to 4 phases
+	
+	GC1
+		Garbage First GC
+		Parallel
+		Concurrent
+		Incrementally Compacting
+		Replacement of CMS
+		Splits Java heap into equal size regions / chunks.
+		
+-	Noteable GC command line options
+		-XX:-ScavengeBeforeFullGC - don't GC young gen during full GC
+		-XX:+PrintGCDetails - displays young, old GC times and young gen and total heap size. old gen = total - young gen 
+		-XX:+PrintTenuringDistribution - CMS only and it prints ages of objects in young gen survivor spaces.
+		-XX:+PrintGCTimeStamps - prints number of elapsed seconds since JVM start.
+		-XX:+PrintGCDateStamps - prints date and time.
+		-Xloggc - instruct JVM to create file for offline garbage collection statistics. GCHisto (free) tool can be used for offline analysis.
+		-XX:+PrintGCApplicationConcurrentTime - amount of time app runs during GC 
+		-XX:+PrintGCApplicationStoppedTime -  amount of time app stops during GC
+		-XX:NewSize - initial and minimum size of young gen.
+		-XX:MaxNewSize - maximum size of young gen.
+		-Xmn - initial, minimum and maximum size of young gen.
+		-XX:PermSize - initial and minimum size of perm gen.
+		-XX:MaxPermSize - maximum size of perm gen.
+		-XX:MaxTenuringThreshold - CMS only, promote objects from young gen to old gen when age exceeds this value
+		-XX:SurvivorRatio - Ratio used to allocate space to 2 survivor spaces. Youn gen is eden + 2 survivor spaces.	
+		-XX:CMSInitiatingOccupancyFraction - CMS only, initiate CMS cycle early for concurrent mode failures
+		-XX:+UseCMSInitiatingOccupancyOnly - used with above.
+		-XX:+DisableExplicitGC - ignore explicit System.gc() calls
+		-XX:+ExplicitGCInvokesConcurrent - explicit System.gc() / full gc is run concurrently.
+		-XX:+CMSClassUnloadingEnabled - garbage collect perm gen (default perm gen is not GCed)
+		-XX:ParallelGCThreads - number of threads for remark phase (CMS only)
+		-XX:+AggressiveOpts - new optimization settings that some risk since they are not default.
+		
+		concurrent mode failure 
+		if -XX:+PrintGCDetails prints concurrent mode failure then old gen is garbage collected AND compacted 
+		to free space.  This operation will stop all application threads.
+		see CMSInitiatingOccupancyFraction command line option.
+		
+-	Garbage Generators
+	Some operations such as resizing generate garbage.  
+	Collections such as ArrayList, Vector, HashMap and ConcurrentHashMap underlying data store is Arrays so resizing can be expensive.
+	LinkedList and TreeMap use references so a better alternative.
+	StringBuilder and StringBuffer underlying data store is also array.
+	
+	
+D. JIT		
+The JIT does not compile every single method in an application.  All code initially runs in the interpreter.
 
+-	JVM uses counters to know when a piece of code needs to be compiled. Every method has two counters:
+	invocation counter - incremented every time method is entered
+	backedge counter - detects methods with loops and allows compilation to trigger even if invocation counter threshold is not reached.
+	
+-	Compilation Process
+	Requests are put in a queue.
+	The interpreter continues to execute code and doesn't wait for compilation to complete. 
+	Once compiler thread compiles the code the next call uses the compiled code instead of interpreted code.
+	The next call can use compiled code even if it is already part of long running loop (On Stack Replacement - OSR)
+	server JIT default - block of java code executed 10,000 times before converted to native machine code.
+	
+-	Noteable JIT command line options
+	-Xbatch or -XX:BackgroundCompilation options to wait for compilation.
+	-XX:+PrintCompilation - generate a line of output for every compilation performed.
+	
+
+E.  Additional Considerations for Trading Applications
+-	JVM warm-up
+   	Oracle/Sun doesn't recommend it (per their FAQ) but there is evidence where it is advisable to 
+   	warm up JVM so hotspot/jit can kick-in. Specially important for low latency trading application 
+   	to run as fast as possible.
+
+-	Garbage Collector
+   	Understand garbage collectors supplied by Java and use the one that is appropriate for the application.
+   	Use Concurrent GC.  
+   
+-	Reycle JVM
+   	Find a time in day to recycle JVM to clean up resources including fragmented memory left after CMS GC.   
+
+-	GC is not called when following are used:
+	- JNI
+	- Byte Buffer (allocateDirect)
+	

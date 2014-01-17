@@ -46,7 +46,11 @@ public class OrderExecutor {
 			@Override
 			public void onMessage(Object o) {
 				log.info("order recevied:" + o);
-				queue.add((Order) o);
+				try {
+					queue.put((Order) o);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}

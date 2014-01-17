@@ -7,16 +7,20 @@ The master document contains high level ideas and references.
 
 A. Application Design and Implementation
 
-1. Event Driven Architecture
-   Independent components that communicate with each other using messaging.  Event driven systems are inherently
-   simpler and loosly coupled.     
-2. Data Structures 
-   Use data structure to keep lookups to either O(1) or O(log n). Avoid O(n) or O(n2) data structures.
-   Use lock free data structures where possible.
-3. Concurrency 
-   Avoid multi-threading in core components if lock contention will degrade system performance. 
-   Instead achieve concurrency by passing messages to objects that don't require synchronization.
-   When using mult-threading then understand Amdhal Law.
-4. Object Pools 
-   Create object pools to avoid too many temporary objects.
+-	Event Driven Architecture
+	Independent components that communicate with each other using messaging.  Event driven systems are inherently
+   	simpler and loosly coupled.     
+
+-	Data Structures 
+   	Use efficient algorithms that execute with fewer CPU instructions (shorter path length).
+   	Use data structure to keep lookups to either O(1) or O(log n). Avoid O(n) or O(n2) data structures.
+   	Use lock free data structures where possible.
+
+-	Concurrency 
+   	Avoid multi-threading in core components if lock contention will degrade system performance. 
+   	Instead achieve concurrency by passing messages to objects that don't require synchronization.
+   	When using mult-threading then understand Amdhal Law.
+
+-	Object Pools 
+   	Create object pools to avoid too many temporary objects.
 
