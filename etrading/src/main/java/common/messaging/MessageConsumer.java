@@ -10,7 +10,9 @@ import com.higherfrequencytrading.chronicle.impl.IndexedChronicle;
 import common.Logger;
 
 /*
- * A helper class to receive messages. 
+ * Message recevier class.  
+ * 
+ * This class along with MessageProducer class simulate a P2P queue. 
  * 
  * Internally uses Java Chronicle library.
  * 

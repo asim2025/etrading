@@ -8,7 +8,9 @@ import com.higherfrequencytrading.chronicle.impl.IndexedChronicle;
 import common.Logger;
 
 /*
- * A helper class to send messages. 
+ * Message sender class. 
+ * 
+ * This class along with MessageConsumer class simulate a P2P queue.
  * 
  * Internally uses Chronicle library
  * 
