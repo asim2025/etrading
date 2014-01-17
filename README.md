@@ -41,6 +41,6 @@ https://github.com/asim2025/etrading/blob/master/etrading/docs/Etrading%20Techni
   Reference Book: Algorithmic Trading and DMA by Barry Johnson
   
   
-* Technical Strategies to be used to improve performance  (draft)
+* Performance monitoring and tuning guidelines for Java, Linux etc can be found in the docs folder:
 
 https://github.com/asim2025/etrading/tree/master/etrading/docs
