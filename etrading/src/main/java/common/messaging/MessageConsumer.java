@@ -32,7 +32,7 @@ public class MessageConsumer {
 	
 	public MessageConsumer(String dest) throws IOException {
 		chr = new IndexedChronicle(ROOT_DIR + dest);
-		idxChr = new IndexedChronicle(ROOT_DIR + dest + "_idx");
+		idxChr = new IndexedChronicle(ROOT_DIR + dest + "_counter");
 		
 		runner = new Thread(new Runner());
 		runner.setName("MessageConsumer");
@@ -58,6 +58,7 @@ public class MessageConsumer {
 				Excerpt excerpt = chr.createExcerpt();
 				long size = excerpt.size();
 				long index = getLastIndex();
+				//log.debug("init: index:" + index + ", size:" + size);
 				
 				while (index < size && listeners.size() > 0) {
 					log.debug("index:" + index + ",size:" + size);
@@ -86,8 +87,8 @@ public class MessageConsumer {
 		private long getLastIndex() {
 			Excerpt ex = idxChr.createExcerpt();
 			long size = ex.size();
-			long index = 1;
-			
+			long index = 0;
+					
 			if (size > 0) {
 				ex.index(size-1);
 				index = ex.readLong();
