@@ -2,8 +2,6 @@ package exchange.orderbook;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.Random;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,55 +16,56 @@ import common.Logger;
  * @author asim2025
  */
 public class OrderExecutorTest {
-	private Logger logger = Logger.getInstance(OrderExecutorTest.class);
+	private Logger log = Logger.getInstance(OrderExecutorTest.class);
 	private OrderExecutor executor;
 	
 	@Before
 	public void init() throws Exception {
 		executor = new OrderExecutor();
-		logger.showReadableTime(true);
-		logger.setDebug(true);
+		log.showReadableTime(true);
+		log.setDebug(true);
 	}
 	
 	@Test
 	public void addSingleLimitOrder() throws InterruptedException {
-		String ticker = "IBM";
-		int shares = 100;
-		double limitPrice = 123.10;	
-		long entryTime = System.nanoTime();	
-		int orderId = executor.addOrder(ticker, OrderType.Limit, OrderSide.BUY, shares, 
-				limitPrice, entryTime);
-		logger.info("orderId:" + orderId);
+		log.info("addSingleLimitOrder");
+		Order order = getOrder("IBM", OrderType.Limit, OrderSide.BUY, 100, 12310, System.nanoTime());
+		int orderId = order.getId();
+		log.info("orderId:" + orderId);
 		assertTrue(orderId != -1);
-		Thread.sleep(100); // add delay
-		executor.printOrderBook(ticker, OrderSide.BUY);
+		executor.addOrder(order);
+		Thread.sleep(5); // add delay
+		executor.printOrderBook("IBM", OrderSide.BUY);
 	}
 
 	@Test
 	public void matchTwoLimitOrders() throws InterruptedException {
-		int orderId1 = executor.addOrder("IBM", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
-		logger.info("orderId:" + orderId1);
-		int orderId2 = executor.addOrder("IBM", OrderType.Limit, OrderSide.SELL, 300, 25, System.nanoTime());
-		logger.info("orderId:" + orderId2);
-		Thread.sleep(1000);
-		executor.printOrderBook("IBM", OrderSide.BUY);
-		executor.printOrderBook("IBM", OrderSide.SELL);
-	}
-	
-	@Test
-	public void matchLimitMarketOrders() throws InterruptedException {
-		int orderId1 = executor.addOrder("MSFT", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
-		logger.info("orderId:" + orderId1);
-		int orderId2 = executor.addOrder("MSFT", OrderType.Market, OrderSide.SELL, 300, 25, System.nanoTime());
-		logger.info("orderId:" + orderId2);
-		Thread.sleep(1000);
+		log.info("addSingleLimitOrder");
+		Order order1 = getOrder("MSFT", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
+		executor.addOrder(order1);
+		Order order2 = getOrder("MSFT", OrderType.Limit, OrderSide.SELL, 300, 25, System.nanoTime());
+		executor.addOrder(order2);
+		Thread.sleep(5); // add delay
 		executor.printOrderBook("MSFT", OrderSide.BUY);
 		executor.printOrderBook("MSFT", OrderSide.SELL);
 	}
 	
 	
 	@Test
-	public void buildOrderBook() throws InterruptedException {
+	public void matchLimitMarketOrders() throws InterruptedException {
+		log.info("matchLimitMarketOrders");
+		Order order1 = getOrder("A", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
+		executor.addOrder(order1);
+		Order order2 = getOrder("A", OrderType.Market, OrderSide.SELL, 300, 25, System.nanoTime());
+		executor.addOrder(order2);
+		Thread.sleep(5); // add delay
+		executor.printOrderBook("A", OrderSide.BUY);
+		executor.printOrderBook("A", OrderSide.SELL);
+	}
+	
+	
+	//@Test
+	/*public void buildOrderBook() throws InterruptedException {
 		int orderId1 = executor.addOrder("IBM", OrderType.Limit, OrderSide.BUY, 300, 25, System.nanoTime());
 		logger.info("orderId:" + orderId1);
 		int orderId2 = executor.addOrder("IBM", OrderType.Limit, OrderSide.SELL, 400, 25.25, System.nanoTime());
@@ -85,11 +84,11 @@ public class OrderExecutorTest {
 		executor.printOrderBook("IBM", OrderSide.BUY);
 		executor.printOrderBook("IBM", OrderSide.SELL);
 	}
-	
+	*/
 	
 
 	// -- disabled @Test
-	public void addMultipleLimitOrder() throws InterruptedException {
+	/*public void addMultipleLimitOrder() throws InterruptedException {
 		
 		Random random = new Random();
 		logger.setDebug(false);
@@ -106,6 +105,16 @@ public class OrderExecutorTest {
 			assertTrue(orderId != -1);			
 		}
 	}
+	*/
 	
+	private Order getOrder(String ticker, OrderType orderType, OrderSide orderSide, int shares, 
+            double limitPrice, long entryTime) throws InterruptedException {
+    
+    int side = OrderUtil.getSide(orderSide);
+    int type = OrderUtil.getOrderType(orderType);
+        
+    Order order = new Order(ticker, type, side, shares, (int) limitPrice * 100, entryTime);
+    return order;
+	}
 
 }

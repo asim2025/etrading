@@ -13,7 +13,7 @@ import common.messaging.MessageConsumer;
 import common.messaging.MessageListener;
 
 /*
- * Process and manage orders received from upstream.
+ * Process and manage orders received from FIX Gateway Server.
  * Maintain a ticker level limit order book.
  * 
  * https://github.com/asim2025/etrading.git
@@ -24,30 +24,40 @@ public class OrderExecutor {
 	private final static Logger log = Logger.getInstance(OrderExecutor.class);
 	private final static String ORDER_QUEUE = "Order_Exec_Queue";
 	
-	private final static Map<String, OrderBookEntry> orderbooks = new ConcurrentHashMap<>(); // ticker level order book 
+	/*
+	 * limit order books by ticker. 
+	 * each order book consist of buy and sell sub-book.
+	 */
+	private final static Map<String, OrderBookEntry> orderbooks = new ConcurrentHashMap<>();
+	
+	/*
+	 * All orders from upstream are placed in local queue and processed in time receive priority. 
+	 */
 	private BlockingQueue<Order> queue = new ArrayBlockingQueue<>(10000);
 	
 	private Thread executor;
-	private MessageConsumer consumer;
+	private MessageConsumer orderConsumer;
+	
 	
 	public static void main(String[] args) throws Exception {
 		@SuppressWarnings("unused")
 		OrderExecutor executor = new OrderExecutor();
+		log.info("started...");
 		Thread.currentThread().join();
 	}
 	
+	
 	public OrderExecutor() throws IOException {
-		executor = new Thread(new BookThread(queue), "OrderExecutor");
+		executor = new Thread(new OrderBookRunner(queue), "OrderBookRunner");
 		executor.start();
 		
-		consumer = new MessageConsumer(ORDER_QUEUE);
-		consumer.addListener(new MessageListener() {
+		orderConsumer = new MessageConsumer(ORDER_QUEUE);
+		orderConsumer.addListener(new MessageListener() {
 
 			@Override
 			public void onMessage(Object o) {
-				log.info("order recevied:" + o);
 				try {
-					queue.put((Order) o);
+					addOrder( (Order) o );
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -56,41 +66,15 @@ public class OrderExecutor {
 	}
 	
 	/*
-	 * Process new order entered by the trader. 
-	 * 
-	 * @return orderId
+	 * Add order to internal queue.
 	 */
-	public int addOrder(String ticker, OrderType orderType, OrderSide orderSide, int shares, 
-			double limitPrice, long entryTime) throws InterruptedException {
-		
-		int side = getSide(orderSide);
-		int type = getOrderType(orderType);
-		
-		if (log.isDebug()) {
-			log.debug("addOrder: ticker:" + ticker + ",side:" + side + ",type:" + type +
-					",shares:" + shares + ",limitPrice:" + limitPrice + ",entryTime:" + entryTime);
-		}
-		
-		Order order = new Order(ticker, type, side, shares, (int) limitPrice * 100, entryTime);
-		log.debug("orderId:" + order.getId());
-		
-		queue.put(order); 
-		return order.getId();
+	public void addOrder(Order order) throws InterruptedException {
+		log.info("order recevied:" + order);
+		queue.put(order);
 	}
-
 	
-	/*
-	 * Remove order from the queue, identified by the order id.
-	 * Check if the order is partially executed.
-	 * 
-	 * @return orderId of cxl order, -1 if order not found.
-	 */
-	/*public int cancel(String ticker, Order order) {
-		return -1;
-	}
-	 */
 	
-
+	
 	/*
 	 * Execute a trade.  
 	 * Handle limit and market orders.
@@ -115,6 +99,10 @@ public class OrderExecutor {
 	}
 	
 	
+	/*
+	 * Match Buy and Sell orders for the same ticker.
+	 * Return number of shares filled.
+	 */
 	private int executeOrder(Order order, OrderBook otherBook) {
 		// find order in the otherbook
 		Limit otherLimit = otherBook.search(order.getLimitPrice());
@@ -157,8 +145,30 @@ public class OrderExecutor {
 	}
 	
 	
+	/*
+	 * Return Order Book for ticker/side combination
+	 */
+	private OrderBook getOrderBook(String ticker, int side, boolean createIt) {
+		OrderBook book = null;
+		
+		synchronized (ticker) {
+			OrderBookEntry entry = orderbooks.get(ticker);
+			if (createIt && entry == null) {
+				entry = new OrderBookEntry();
+				orderbooks.put(ticker, entry);
+				log.info("created orderBook for key:" + ticker);
+			}
+		
+			book = (side == 1) ? entry.buy : entry.sell;
+		}
+		return book; 
+	}
+	
+	/*
+	 * Print order book entries on std out
+	 */
 	public void printOrderBook(String ticker, OrderSide side) {
-		OrderBook book = getOrderBook(ticker, getSide(side), false);
+		OrderBook book = getOrderBook(ticker, OrderUtil.getSide(side), false);
 		if (book == null) {
 			log.error("book not found");
 		} else {
@@ -166,47 +176,14 @@ public class OrderExecutor {
 			book.printOrderBook();
 		}
 	}
-	
 
-	private OrderBook getOrderBook(String ticker, int side, boolean createIt) {
-		OrderBookEntry entry = orderbooks.get(ticker);
-		if (createIt && entry == null) {
-			entry = new OrderBookEntry();
-			orderbooks.put(ticker, entry);
-			log.info("created orderBook for key:" + ticker);
-		}
-		
-		OrderBook book = (side == 1) ? entry.buy : entry.sell;
-		return book; 
-	}
-	
-	
-	private int getSide(OrderSide orderSide) {
-		int side = 0;
-		switch (orderSide) {
-		case BUY : side = 1; break;
-		case SELL : side = 2; break;
-		default: new RuntimeException("invalid side");
-		}
-		return side;
-	}
-	
 
-	private int getOrderType(OrderType orderType) {
-		int type = 0;
-		switch (orderType) {
-		case Market: type = 1; break;
-		case Limit: type = 2; break;
-		default: new RuntimeException("invalid order type");
-		}
-		return type;
-	}
 
 	
-	private class BookThread implements Runnable {
+	private class OrderBookRunner implements Runnable {
 		private BlockingQueue<Order> queue;
 		
-		public BookThread(BlockingQueue<Order> queue) {
+		public OrderBookRunner(BlockingQueue<Order> queue) {
 			this.queue = queue;
 		}
 		
