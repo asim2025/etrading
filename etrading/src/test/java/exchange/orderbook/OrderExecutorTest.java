@@ -34,7 +34,7 @@ public class OrderExecutorTest {
 		log.info("orderId:" + orderId);
 		assertTrue(orderId != -1);
 		executor.addOrder(order);
-		Thread.sleep(5); // add delay
+		Thread.sleep(1*1000); // add delay
 		executor.printOrderBook("IBM", OrderSide.BUY);
 	}
 
@@ -45,7 +45,7 @@ public class OrderExecutorTest {
 		executor.addOrder(order1);
 		Order order2 = getOrder("MSFT", OrderType.Limit, OrderSide.SELL, 300, 25, System.nanoTime());
 		executor.addOrder(order2);
-		Thread.sleep(5); // add delay
+		Thread.sleep(1*1000); // add delay
 		executor.printOrderBook("MSFT", OrderSide.BUY);
 		executor.printOrderBook("MSFT", OrderSide.SELL);
 	}
@@ -58,7 +58,7 @@ public class OrderExecutorTest {
 		executor.addOrder(order1);
 		Order order2 = getOrder("A", OrderType.Market, OrderSide.SELL, 300, 25, System.nanoTime());
 		executor.addOrder(order2);
-		Thread.sleep(5); // add delay
+		Thread.sleep(1*1000); // add delay
 		executor.printOrderBook("A", OrderSide.BUY);
 		executor.printOrderBook("A", OrderSide.SELL);
 	}
@@ -87,7 +87,7 @@ public class OrderExecutorTest {
 	*/
 	
 
-	// -- disabled @Test
+	// -- disabled, moved to benchmarks later @Test
 	/*public void addMultipleLimitOrder() throws InterruptedException {
 		
 		Random random = new Random();
@@ -109,12 +109,13 @@ public class OrderExecutorTest {
 	
 	private Order getOrder(String ticker, OrderType orderType, OrderSide orderSide, int shares, 
             double limitPrice, long entryTime) throws InterruptedException {
-    
-    int side = OrderUtil.getSide(orderSide);
-    int type = OrderUtil.getOrderType(orderType);
-        
-    Order order = new Order(ticker, type, side, shares, (int) limitPrice * 100, entryTime);
-    return order;
+
+		int side = OrderUtil.getSide(orderSide);
+		int type = OrderUtil.getOrderType(orderType);
+
+		Order order = new Order(ticker, type, side, shares,
+				(int) limitPrice * 100, entryTime);
+		return order;
 	}
 
 }

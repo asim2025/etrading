@@ -39,7 +39,7 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 
 	// TODO: use config file
 	private static final String CONFIG = "C:/Users/asim/git/etrading/etrading/src/main/resources/gatewayserver.properties";
-	private static final String ORDER_QUEUE = "Order_Exec_Queue";
+	private static final String ORDER_QUEUE = "order_queue";
 	private MessageProducer producer;
 	
 	public static void main(String[] args) throws Exception {

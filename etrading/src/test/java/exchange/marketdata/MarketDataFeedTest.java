@@ -19,6 +19,16 @@ public class MarketDataFeedTest {
 	}
 	
 	@Test
+	public void singleTickerPriceTest() {
+		Timer.start("price");
+		MarketDataFeed feed = new MarketDataFeed();
+		double price = feed.getPrice("IBM",  100,  120);
+		logger.info("price:"+price);
+		assertTrue(price >= 100D && price < 121D);
+		logger.info(Timer.endSecs("price"));		
+	}
+	
+	// -- disabled , move to benchmark later  @Test
 	public void priceTest() {
 		Timer.start("price");
 		MarketDataFeed feed = new MarketDataFeed();

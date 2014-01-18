@@ -1,5 +1,7 @@
 package exchange.orderbook;
 
+import java.io.Serializable;
+
 /*
  * Basic order / trade object
  * 
@@ -7,7 +9,8 @@ package exchange.orderbook;
  * 
  * @author asim2025
  */
-public class Order {
+public class Order implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private String ticker;		// ticker
 	private int id;				// unique order id
 	private int side;			// buy = 1, sell = 2 (FIX protocol tag 54)

@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import common.Logger;
 import common.messaging.MessageConsumer;
 import common.messaging.MessageListener;
+import common.messaging.MessageProducer;
 
 /*
  * Process and manage orders received from FIX Gateway Server.
@@ -22,8 +23,8 @@ import common.messaging.MessageListener;
  */
 public class OrderExecutor {
 	private final static Logger log = Logger.getInstance(OrderExecutor.class);
-	private final static String ORDER_QUEUE = "Order_Exec_Queue";
-	
+	private final static String ORDER_QUEUE = "order_queue";
+	private final static String DB_QUEUE = "db_queue";
 	/*
 	 * limit order books by ticker. 
 	 * each order book consist of buy and sell sub-book.
@@ -37,7 +38,7 @@ public class OrderExecutor {
 	
 	private Thread executor;
 	private MessageConsumer orderConsumer;
-	
+	private MessageProducer dbProducer;
 	
 	public static void main(String[] args) throws Exception {
 		@SuppressWarnings("unused")
@@ -48,6 +49,8 @@ public class OrderExecutor {
 	
 	
 	public OrderExecutor() throws IOException {
+		dbProducer = new MessageProducer(DB_QUEUE);
+		
 		executor = new Thread(new OrderBookRunner(queue), "OrderBookRunner");
 		executor.start();
 		
@@ -150,17 +153,14 @@ public class OrderExecutor {
 	 */
 	private OrderBook getOrderBook(String ticker, int side, boolean createIt) {
 		OrderBook book = null;
-		
-		synchronized (ticker) {
-			OrderBookEntry entry = orderbooks.get(ticker);
-			if (createIt && entry == null) {
-				entry = new OrderBookEntry();
-				orderbooks.put(ticker, entry);
-				log.info("created orderBook for key:" + ticker);
-			}
-		
-			book = (side == 1) ? entry.buy : entry.sell;
+		OrderBookEntry entry = orderbooks.get(ticker);
+		if (createIt && entry == null) {
+			entry = new OrderBookEntry();
+			orderbooks.put(ticker, entry);
+			log.info("created orderBook for key:" + ticker);
 		}
+		
+		book = (side == 1) ? entry.buy : entry.sell;
 		return book; 
 	}
 	
@@ -193,6 +193,7 @@ public class OrderExecutor {
 					Order order = queue.take();
 					int orderId = order.getId();
 					log.info("processing orderId:" + orderId);
+					dbProducer.send(order);
 					
 					OrderBook book = getOrderBook(order.getTicker(), order.getSide(), true);
 					log.info("matching orderId:" + orderId);
