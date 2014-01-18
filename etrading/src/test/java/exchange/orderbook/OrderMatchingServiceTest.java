@@ -15,13 +15,13 @@ import common.Logger;
  * 
  * @author asim2025
  */
-public class OrderExecutorTest {
-	private Logger log = Logger.getInstance(OrderExecutorTest.class);
-	private OrderExecutor executor;
+public class OrderMatchingServiceTest {
+	private Logger log = Logger.getInstance(OrderMatchingServiceTest.class);
+	private OrderMatchingService executor;
 	
 	@Before
 	public void init() throws Exception {
-		executor = new OrderExecutor();
+		executor = new OrderMatchingService();
 		log.showReadableTime(true);
 		log.setDebug(true);
 	}

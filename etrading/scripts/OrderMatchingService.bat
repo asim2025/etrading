@@ -6,6 +6,6 @@ set APP_LIB=%MAVEN_REPO%\com\higherfrequencytrading\chronicle\1.7.2\chronicle-1.
 
 cls
 
-java -cp %APP_HOME%;%APP_LIB% -server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC exchange.orderbook.OrderExecutor
+java -cp %APP_HOME%;%APP_LIB% -server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC exchange.orderbook.OrderMatchingService
 
 

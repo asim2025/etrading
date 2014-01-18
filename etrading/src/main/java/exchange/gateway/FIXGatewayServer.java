@@ -3,6 +3,8 @@ package exchange.gateway;
 import java.io.IOException;
 
 import common.Logger;
+import common.messaging.MessageConsumer;
+import common.messaging.MessageListener;
 import common.messaging.MessageProducer;
 import exchange.orderbook.Order;
 import quickfix.Application;
@@ -40,7 +42,10 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 	// TODO: use config file
 	private static final String CONFIG = "C:/Users/asim/git/etrading/etrading/src/main/resources/gatewayserver.properties";
 	private static final String ORDER_QUEUE = "order_queue";
-	private MessageProducer producer;
+	private final static String FIX_QUEUE = "fix_exec_queue"; 
+	private MessageProducer orderProducer;		// send orders to Order Matching Service
+	private MessageConsumer execConsumer;		// receive orders from Execution Service
+	
 	
 	public static void main(String[] args) throws Exception {
 		SessionSettings settings = new SessionSettings(CONFIG);
@@ -54,7 +59,17 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 	}
 	
 	public FIXGatewayServer() throws IOException {
-		producer = new MessageProducer(ORDER_QUEUE);
+		orderProducer = new MessageProducer(ORDER_QUEUE);
+		execConsumer = new MessageConsumer(FIX_QUEUE);
+		execConsumer.addListener(new MessageListener() {
+
+			@Override
+			public void onMessage(Object o) {
+				Order order = (Order) o;
+				log.info("filled order recevied:" + order);
+				//TODO: send to client
+			} 
+		});
 	}
 	
 	@Override
@@ -70,7 +85,7 @@ public class FIXGatewayServer extends MessageCracker implements Application {
 		
 		Order o = new Order(ticker, ordType, side, shares, nprice, entryTime);
 		log.info("sending order:" + o);
-		producer.send(o);
+		orderProducer.send(o);
 	}
 	
 	@Override

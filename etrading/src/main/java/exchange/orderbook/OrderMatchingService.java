@@ -1,7 +1,7 @@
 package exchange.orderbook;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -21,10 +21,11 @@ import common.messaging.MessageProducer;
  * 
  * @author asim2025
  */
-public class OrderExecutor {
-	private final static Logger log = Logger.getInstance(OrderExecutor.class);
-	private final static String ORDER_QUEUE = "order_queue";
-	private final static String DB_QUEUE = "db_queue";
+public class OrderMatchingService {
+	private final static Logger log = Logger.getInstance(OrderMatchingService.class);
+	private final static String ORDER_QUEUE = "order_queue";	// orders from FIX gateway
+	private final static String DB_QUEUE = "db_queue";			// async db persistance queue 
+	private final static String EXEC_QUEUE = "exec_queue";		// executed orders
 	/*
 	 * limit order books by ticker. 
 	 * each order book consist of buy and sell sub-book.
@@ -39,17 +40,19 @@ public class OrderExecutor {
 	private Thread executor;
 	private MessageConsumer orderConsumer;
 	private MessageProducer dbProducer;
+	private MessageProducer execProducer;
 	
 	public static void main(String[] args) throws Exception {
 		@SuppressWarnings("unused")
-		OrderExecutor executor = new OrderExecutor();
+		OrderMatchingService executor = new OrderMatchingService();
 		log.info("started...");
 		Thread.currentThread().join();
 	}
 	
 	
-	public OrderExecutor() throws IOException {
+	public OrderMatchingService() throws IOException {
 		dbProducer = new MessageProducer(DB_QUEUE);
+		execProducer = new MessageProducer(EXEC_QUEUE);
 		
 		executor = new Thread(new OrderBookRunner(queue), "OrderBookRunner");
 		executor.start();
@@ -121,7 +124,7 @@ public class OrderExecutor {
 			return 0;
 		}
 		
-		List<Order> orders = new ArrayList<>();
+		List<Order> orders = new LinkedList<>();
 		
 		int shares = order.getShares();
 		for (Order o : otherLimit.getOrders()) {
@@ -138,7 +141,8 @@ public class OrderExecutor {
 
 		for (Order o : orders) {
 			boolean status = otherLimit.removeOrder(o);
-			log.info("removed order. status:" + status);
+			log.info("removed order from LOB. status:" + status);
+			execProducer.send(o);  // send to exec service
 		}
 		
 		if (otherLimit.getOrders().size() == 0) {
