@@ -1,0 +1,102 @@
+Equity Markets - Orders and Algos 
+(source: https://github.com/asim2025/etrading.git)
+
+This document summarizes various order types and algos used in the Equity Markets.  
+
+
+A.	Order 
+	Represents execution instruction.  
+
+
+B.	Order Types
+	- Market Orders
+		Trade given quantity at best price possible.
+		
+	- Limit Orders
+		Trade given quantity at a specified price or better.
+		
+	- Market to Limit Orders
+		Market order with a price limit.
+		
+	- Market with Protection Orders
+		Market order with the protection of an inbuilt price limit.
+		Extension of Market to Limit orders further away from last execution price.
+	
+	- Stop Orders
+		Contingent on an activation (or stop) price.
+		Become a market order when price reaches or exceeds stop point.
+		
+	- Trailing Stop Orders
+		Follows or pegs favorable moves in the market price.	
+		Trailing offset is either an actual amount or a percentage change.
+		
+	- Contingent / if-touched orders
+		Hidden until market price moves to activate them.
+		
+	- Hidden Orders
+		Not displayed on LOB.
+		Only way to know is to see the result of next executed order.
+		One way to find out is to issue IOC orders.
+		
+	- Iceberg / Reverse Orders
+		Small visible peak and significantly large hidden volume.
+		Displayed order has normal time priority within LOB.
+		Hidden order has only price priority (no time).
+		
+	- Discretionary Orders
+		Limit order with discretionary amount
+		Buy orders - limit price plus discretionary amount.
+		Sell orders - limit prce minus discretionary amount.
+		
+	- Pegged Orders
+		Dynamic limit price.
+		Limit price may track best bid, offer or even mid-price.
+		Applies additional offset amount.
+		
+					
+C.	Order Instructions
+	- Durations
+		GTD - Good Till Date
+		GTC - Good Till Cancel
+		GAT - Good after Time/Date
+	
+	- Immediate or Cancel (IOC)
+		Execute order immediately or cancel.  
+		Partial execution allowed.
+	
+	- Fill or Kill (FOK)
+		Execute order immediately or cancel.
+		Must be fully filled (partial executions not allowed).
+		
+	- All or None (AON)
+		Execute full or none.
+		No immediate fill requirement (unlike FOK).
+		Lower execution priority given to AON orders
+		
+	- Minimum Volume
+		Minimum fill or acceptable quantity.
+
+
+D.	Algorithms
+	Set of instructions for accomplishing a given task.
+	
+	- Algorithm Categories
+		Impact Driven - minimize market impact (i.e. price of an asset).
+		Cost Driven - minimize overall trading costs.
+		Opportunistic - take advantage when market conditions are favorable.
+		
+	- TWAP : Time Weighted Average Price
+		Impact Driven
+		Reflects asset's price changed over time.
+		Time based issued at predetermined intervals.
+		Signalling risk due to predictable behavior.
+				
+	- VWAP : Volume Weighted Average Price
+		Impact Driven
+		Total (volume * price) / Total (volume)
+		Trading interval/frequency determined using historical profiles.
+		
+	- POV : Percentage of Volume
+		Impact Driven
+		Example, if 20% participation rate then 200k shares of 1mm total shares traded.
+		
