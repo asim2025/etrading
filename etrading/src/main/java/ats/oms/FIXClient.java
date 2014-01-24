@@ -1,4 +1,4 @@
-package algotrader.oms;
+package ats.oms;
 
 import quickfix.Application;
 import quickfix.DefaultMessageFactory;
