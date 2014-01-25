@@ -1,13 +1,12 @@
 package ats.algo;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import common.Logger;
 
 /*
- * Main program that spawns various algorithms that generate orders for execution.
+ * Main program that spawns algorithms that generate orders for execution.
  * 
  * https://github.com/asim2025/etrading.git
  * 
@@ -16,33 +15,63 @@ import common.Logger;
 public class AlgoEngine {
 	private static Logger log = Logger.getInstance(AlgoEngine.class);
 	
+	@SuppressWarnings({ "unchecked", "serial", "rawtypes" })
+	private final static Map<String, Algo> algos = new HashMap() {{
+		put("TimeSlice", new TimeSlice());
+	}};
+	
+	
 	public static void main(String[] args) throws Exception {
-		AlgoEngine engine = new AlgoEngine();
-		engine.execute();
+		AlgoEngine service = new AlgoEngine();
+		
+		AlgoParameter param = new AlgoParameter();
+		
+		/* Move to JUNIT -- 
+		 * execute a MSFT 6000 shares buy order in 1 minute 
+		 * executing 1000 shares every 10 seconds 
+		 */
+		param.symbol = "MSFT";
+		param.side = Order.Side.BUY;
+		param.totalShares = 6000;
+		param.totalTime = 60 * 1000; // 1 min
+		param.frequency = 10 * 1000; // 10 seconds
+		service.schedule("TimeSlice", param);
 	}
 	
-	public void execute() throws Exception {
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		
-		AbstractAlgo timeSlice = getTimeSlice();
-		
-		scheduler.scheduleAtFixedRate(timeSlice,
-					timeSlice.getConfig().getInitialDelay(),
-					timeSlice.getConfig().getPeriod(),
-					timeSlice.getConfig().getTimeUnit()
-					);
-		
-		Thread.sleep(5000); // let scheduler start
-		scheduler.shutdown();
+	
+	public void schedule(String algoName, AlgoParameter param) throws Exception {
+		Algo algo = algos.get(algoName);
+		AlgoRunner runner = new AlgoRunner(algo, param);
+		Thread t = new Thread(runner);
+		t.start();
+		log.info("runner isDone:" + runner.isDone() + ", exception: " + runner.getE());
 	}	
 	
-	private AbstractAlgo getTimeSlice() {
-		AbstractAlgo algo = new TimeSlice();
+	private class AlgoRunner implements Runnable {
+		private Algo algo;
+		private AlgoParameter param;
+		private Exception e;
+		private boolean done;
 		
-		// TODO: generalize it
-		AlgoParameter param = new AlgoParameter();
-		param.size = 10000;
-		algo.setConfig(new AlgoConfig("TimeSlice", 1, 60, TimeUnit.SECONDS));		
-		return algo;
+		public AlgoRunner(Algo algo, AlgoParameter param) {
+			this.algo = algo;
+			this.param = param;
+			done = false;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				algo.execute(param);
+			} catch (Exception e) {
+				this.e = e;
+			} finally {
+				done = true;
+			}			
+		}
+		
+		public Exception getE() { return e; }
+		public boolean isDone() { return done; }
 	}
+	
 }

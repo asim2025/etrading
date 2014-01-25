@@ -8,7 +8,10 @@ package ats.algo;
  * @author asim2025
  */
 public class AlgoParameter {
-	int size;		// total shares
-	
+	String symbol;				// ticker
+	Order.Side side;			// buy or sell
+	int totalShares;			// total shares
+	long totalTime;				// total time to complete order in milliseconds
+	long frequency; 			// how often order is placed in milliseconds
 
 }
