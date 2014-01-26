@@ -20,23 +20,25 @@ import common.Logger;
 public class TimeSlice implements Algo {
 	private final static Logger log = Logger.getInstance(TimeSlice.class);
 
+	private boolean cancel = false;
+	
 	@Override
 	public void execute(AlgoParameter param) throws Exception {
-		int shares = param.totalShares;
-		long targetShares = (shares * param.frequency) / param.totalTime;
+		int shares = param.getTotalShares();
+		long targetShares = (shares * param.getFrequency()) / param.getTotalTime();
 		int tradedShares = 0;
 		
-		while (tradedShares != shares) {
+		while (!cancel && tradedShares != shares) {
 			// send to Market targetShares
-			sendOrder(param.symbol,
-					param.side,
+			sendOrder(param.getSymbol(),
+					param.getSide(),
 					Order.OrderType.MARKET,
 					(int) targetShares
 				);
 					
-			log.info("market order sent for qty:" + targetShares);
 			tradedShares += targetShares;
-			Thread.sleep(param.frequency);
+			log.info("shares left: " + (shares-tradedShares));
+			Thread.sleep(param.getFrequency());
 		}		
 	}
 
@@ -47,6 +49,12 @@ public class TimeSlice implements Algo {
 	private void sendOrder (String symbol, Order.Side side, Order.OrderType type, int shares) {
 		Order order = new Order(symbol, shares, side, type);
 		log.info("sendOrder:" + order);
+	}
+
+
+	@Override
+	public void cancel() throws Exception {
+		cancel = true;		
 	}
 
 
