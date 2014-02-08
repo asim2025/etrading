@@ -25,14 +25,13 @@ public class ExecutionService {
 	private MessageProducer dbProducer;			// send db persist request
 	
 	public static void main(String[] args) throws Exception {
-		@SuppressWarnings("unused")
 		ExecutionService service = new ExecutionService();
 		log.info("started...");
-		Thread.currentThread().join();
+		service.start();
 	}
 	
 	
-	public ExecutionService() throws IOException {
+	public void start() throws IOException {
 		fixProducer = new MessageProducer(FIX_QUEUE);
 		dbProducer = new MessageProducer(DB_QUEUE);
 		

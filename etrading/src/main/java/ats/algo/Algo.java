@@ -10,7 +10,10 @@ package ats.algo;
  */
 public interface Algo {
 	
-	public void execute(AlgoParameter param) throws Exception; // run strategy and send orders to market
-	public void cancel() throws Exception;  // cancel currently executing strategy 
+	// run strategy and send orders to market
+	public void execute(AlgoParameter param) throws Exception;
+	
+	// cancel currently executing strategy
+	public void cancel() throws Exception;  
 	
 }

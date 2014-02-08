@@ -9,11 +9,11 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author asim2025
  */
-public class AlgoConfig {
-	private String algoName;
-	private long initialDelay;
-	private long period;
-	private TimeUnit timeUnit;
+public final class AlgoConfig {
+	private final String algoName;
+	private final long initialDelay;
+	private final long period;
+	private final TimeUnit timeUnit;
 	
 	public AlgoConfig(String algoName, long initialDelay, long period, TimeUnit timeUnit) {
 		this.algoName = algoName;

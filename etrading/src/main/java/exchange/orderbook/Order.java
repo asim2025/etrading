@@ -1,6 +1,7 @@
 package exchange.orderbook;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * Basic order / trade object
@@ -21,10 +22,10 @@ public class Order implements Serializable {
 	private long updateTime;	// last updated time
 	private int orderType;		// 1 = market, limit = 2 (FIX protocol tag 40)
 
-	private volatile static int GOID = 1;	// unique order id num - enhance for multiple jvms
+	private static AtomicInteger GOID = new AtomicInteger(0);	// unique order id num - enhance for multiple jvms
 	
 	public Order(String ticker, int orderType, int side, int shares, int limitPrice, long entryTime) {
-		this.id= GOID++;
+		this.id= GOID.incrementAndGet();
 		this.ticker = ticker;
 		this.side = side;
 		this.orderType = orderType;

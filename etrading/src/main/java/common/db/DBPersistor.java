@@ -1,7 +1,6 @@
 package common.db;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import common.Logger;
 import common.messaging.MessageConsumer;
@@ -18,18 +17,19 @@ public class DBPersistor {
 	private final static Logger log = Logger.getInstance(DBPersistor.class);
 	private final static String DB_QUEUE = "db_queue";
 	
-	private BlockingQueue<Object> queue = new ArrayBlockingQueue<>(10000);
+	private ConcurrentLinkedQueue<Object> queue = new ConcurrentLinkedQueue<>();
 	private MessageConsumer dbConsumer;
 	private Thread dbPersistorThread;
 	
 	public static void main(String[] args) throws Exception {
-		@SuppressWarnings("unused")
 		DBPersistor dbPersistor = new DBPersistor();
+		dbPersistor.start();
 		log.info("started...");
-		Thread.currentThread().join();
+		//Thread.currentThread().join();
 	}
 	
-	public DBPersistor() throws Exception {
+	
+	public void start() throws Exception {
 		dbPersistorThread = new Thread(new DBPersistorRunner(), "DBPersistorThread");
 		dbPersistorThread.start();
 		
@@ -38,17 +38,13 @@ public class DBPersistor {
 
 			@Override
 			public void onMessage(Object o) {
-				try {
-					queue.put(o);
-				} catch (InterruptedException ioe) {
-					ioe.printStackTrace();
-				}
+				queue.offer(o);
 			}
 		});
 	}
 
 
-	private void persist(Object o) throws Exception {
+	private void persist(Object o) {
 		//TODO: write record to database using JDBC
 		// for now just log to stdout
 		log.info("stored entry in db:" + o);
@@ -58,12 +54,9 @@ public class DBPersistor {
 		@Override
 		public void run() {
 			while (true) {
-				try {
-					Object o = queue.take();
-					persist(o);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				Object o = queue.poll();
+				if (o!=null) persist(o);
+				//else spin lock
 			}
 
 		}

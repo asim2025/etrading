@@ -205,4 +205,6 @@ E.  Additional Considerations for Trading Applications
 -	GC is not called when following are used:
 	- JNI
 	- Byte Buffer (allocateDirect)
+	- Unsafe
+
 	

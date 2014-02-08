@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import common.Logger;
 import common.messaging.MessageConsumer;
@@ -35,7 +34,7 @@ public class OrderMatchingService {
 	/*
 	 * All orders from upstream are placed in local queue and processed in time receive priority. 
 	 */
-	private BlockingQueue<Order> queue = new ArrayBlockingQueue<>(10000);
+	private ConcurrentLinkedQueue<Order> queue = new ConcurrentLinkedQueue<>();
 	
 	private Thread executor;
 	private MessageConsumer orderConsumer;
@@ -43,14 +42,13 @@ public class OrderMatchingService {
 	private MessageProducer execProducer;
 	
 	public static void main(String[] args) throws Exception {
-		@SuppressWarnings("unused")
 		OrderMatchingService executor = new OrderMatchingService();
 		log.info("started...");
-		Thread.currentThread().join();
+		executor.start();
 	}
 	
 	
-	public OrderMatchingService() throws IOException {
+	public void start() throws IOException {
 		dbProducer = new MessageProducer(DB_QUEUE);
 		execProducer = new MessageProducer(EXEC_QUEUE);
 		
@@ -62,11 +60,7 @@ public class OrderMatchingService {
 
 			@Override
 			public void onMessage(Object o) {
-				try {
-					addOrder( (Order) o );
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+				addOrder( (Order) o );
 			}
 		});
 	}
@@ -74,9 +68,9 @@ public class OrderMatchingService {
 	/*
 	 * Add order to internal queue.
 	 */
-	public void addOrder(Order order) throws InterruptedException {
+	public void addOrder(Order order) {
 		log.info("order recevied:" + order);
-		queue.put(order);
+		queue.offer(order);
 	}
 	
 	
@@ -185,33 +179,31 @@ public class OrderMatchingService {
 
 	
 	private class OrderBookRunner implements Runnable {
-		private BlockingQueue<Order> queue;
+		private ConcurrentLinkedQueue<Order> queue;
 		
-		public OrderBookRunner(BlockingQueue<Order> queue) {
+		public OrderBookRunner(ConcurrentLinkedQueue<Order> queue) {
 			this.queue = queue;
 		}
 		
 		public void run() {
 			while (true) {
-				try {
-					Order order = queue.take();
-					int orderId = order.getId();
-					log.info("processing orderId:" + orderId);
-					dbProducer.send(order);
-					
-					OrderBook book = getOrderBook(order.getTicker(), order.getSide(), true);
-					log.info("matching orderId:" + orderId);
-					if (execution(order, book) == order.getShares()) {
-						log.info("matched orderId:" + orderId);
-						continue;
-					}
-					
-					log.info("adding to lob, orderId:" + orderId);
-					Limit limit = book.insert(order.getLimitPrice());
-					limit.setOrder(order);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+				Order order = queue.poll();
+				if (order == null) continue; //spin
+				
+				int orderId = order.getId();
+				log.info("processing orderId:" + orderId);
+				dbProducer.send(order);
+				
+				OrderBook book = getOrderBook(order.getTicker(), order.getSide(), true);
+				log.info("matching orderId:" + orderId);
+				if (execution(order, book) == order.getShares()) {
+					log.info("matched orderId:" + orderId);
+					continue;
 				}
+				
+				log.info("adding to lob, orderId:" + orderId);
+				Limit limit = book.insert(order.getLimitPrice());
+				limit.setOrder(order);
 			}
 		}
 	}
