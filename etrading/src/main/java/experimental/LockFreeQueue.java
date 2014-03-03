@@ -19,6 +19,13 @@ package experimental;
  * The default capacity is 10,000.  The caller can override default capacity by passing a different
  * value to the constructor.
  * 
+ * ** NOTE : 
+ * 
+ *  Current implementation has some issues. For example, nodectr is defined volatile and ++ (increment) on 
+ *  volatile is not atomic. An easy fix is to define nodectr as AtomicInteger.  However, I will be 
+ *  completely rewriting the implementation using CAS or AQS. 
+ * 
+ * ***
  * https://github.com/asim2025/etrading.git
  * 
  * @author asim2025

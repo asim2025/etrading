@@ -26,7 +26,7 @@ public class VWAP implements Algo {
 	public void execute(AlgoParameter param) throws Exception {
 		
 		// step 1 - calculate target shares and price using T-1 historical profile
-		// future improvement to calculate price that match traded intervals
+		// future TODO : calculate price that match traded intervals
 		double price = vwap(param.getHistVolume(), param.getHistPrice());
 		
 		int totalShares = param.getTotalShares();
@@ -78,8 +78,7 @@ public class VWAP implements Algo {
 	 * send order to OMS to route to market
 	 */
 	private void sendOrder (String symbol, Order.Side side, Order.OrderType type, int shares, double price) {
-		Order order = new Order(symbol, shares, side, type);
-		order.setPrice(price);
+		Order order = new Order(symbol, shares, side, type, price);
 		log.info("sendOrder:" + order);
 	}
 

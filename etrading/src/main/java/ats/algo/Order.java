@@ -3,20 +3,22 @@ package ats.algo;
 import java.io.Serializable;
 
 /*
- * Basic Order object  
+ * Basic Order instruction
+ * 
+ * The object is immuatable and can't be modified after creation.
  * 
  * https://github.com/asim2025/etrading.git
  * 
  * @author asim2025
  */
-public class Order implements Serializable {
-	private static final long serialVersionUID = 1L;
+public final class Order implements Serializable {
+	final private static long serialVersionUID = 1L;
 	
-	private String symbol;		// ticker
-	private int shares;			// original shares on the order
-	private double limitPrice;	// order price for limit orders
-	private Side side;
-	private OrderType orderType;
+	final private String symbol;		// ticker
+	final private int shares;			// original shares on the order
+	final private double limitPrice;	// order price for limit orders
+	final private Side side;
+	final private OrderType orderType;
 	
 	enum Side {
 		BUY,
@@ -29,10 +31,15 @@ public class Order implements Serializable {
 	}
 	
 	public Order(String symbol, int shares, Side side, OrderType type) {
+		this(symbol, shares, side, type, 0D);
+	}
+	
+	public Order(String symbol, int shares, Side side, OrderType type, double price) {
 		this.symbol = symbol;
 		this.shares = shares;
 		this.side = side;
 		this.orderType = type;
+		this.limitPrice = price;
 	}
 	
 	public String getSymbol() {
@@ -49,10 +56,6 @@ public class Order implements Serializable {
 	
 	public double getPrice() {
 		return limitPrice;
-	}
-	
-	public void setPrice(double price) {
-		this.limitPrice = price;
 	}
 	
 	public OrderType getOrderType() {

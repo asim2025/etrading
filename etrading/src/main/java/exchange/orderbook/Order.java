@@ -22,7 +22,7 @@ public class Order implements Serializable {
 	private long updateTime;	// last updated time
 	private int orderType;		// 1 = market, limit = 2 (FIX protocol tag 40)
 
-	private static AtomicInteger GOID = new AtomicInteger(0);	// unique order id num - enhance for multiple jvms
+	private static AtomicInteger GOID = new AtomicInteger(0);	// Global Order ID - enhance for multiple jvms
 	
 	public Order(String ticker, int orderType, int side, int shares, int limitPrice, long entryTime) {
 		this.id= GOID.incrementAndGet();
@@ -54,8 +54,10 @@ public class Order implements Serializable {
 	}
 	
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof Order)) return false;
-		return this.getId() == ((Order)o).getId();
+		if (o != null && o instanceof Order) {
+			return this.getId() == ((Order)o).getId();
+		}
+		return false;
 	}
 
 	public int hashCode() {
