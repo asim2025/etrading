@@ -41,6 +41,8 @@ References
 -	Java Memory Model - http://www.cs.umd.edu/~pugh/java/memoryModel/
 -	Open JDK - http://openjdk.java.net/
 -	Concurrent Mode Failure - https://blogs.oracle.com/jonthecollector/entry/what_the_heck_s_a
+-	Java Concurrency in Practice by Brian Goetz
+-	The Art of Multiprocessor Programming - Maurice Herlihy 
 
 
 
