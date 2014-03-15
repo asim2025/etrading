@@ -1,6 +1,9 @@
 Electronic Trading
 ========
 
+*** NOTE: Mar 15, 2014 - I am pausing this project to avoid any potential conflict of interests with my new trading system development job. ****
+
+
 The goal of this open source project is to build real-time and low latency electronic trading components in Java that can be used to build Exchanges/ECNs and Front Office Algo trading systems.  
 
 System Diagram  
